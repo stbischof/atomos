@@ -40,16 +40,18 @@ public class AtomosConnectFactory implements ConnectFramework {
 
 	@Override
 	public Optional<ConnectModule> getModule(String location) {
-		final AtomosBundleInfo atomosBundle = atomosRuntime.getAtomosBundle(location);
+		final AtomosBundleInfo atomosBundle = atomosRuntime
+				.getAtomosBundle(location);
 		if (atomosBundle == null) {
 			return Optional.empty();
 		}
 		return Optional.ofNullable(() -> atomosBundle.getConnectContent());
-		
+
 	}
 
 	@Override
-	public ConnectFramework initialize(File storage, Map<String, String> configuration) {
+	public ConnectFramework initialize(File storage,
+			Map<String, String> configuration) {
 		atomosRuntime.initialize(storage, configuration);
 		return this;
 	}

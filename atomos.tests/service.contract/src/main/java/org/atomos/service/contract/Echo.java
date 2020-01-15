@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.atomos.service.contract;
 
-public interface Echo 
+public interface Echo
 {
-	String echo(String msg);
+    String echo(String msg);
 }

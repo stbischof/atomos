@@ -1,24 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.atomos</groupId>
-    <artifactId>atomos</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-  </parent>
-  <packaging>pom</packaging>
-  <artifactId>atomos.tests</artifactId>
-  <modules>
-    <module>service.contract</module>
-    <module>service.impl</module>
-    <module>service.impl.activator</module>
-    <module>service.impl.a</module>
-    <module>service.impl.b</module>
-    <module>service.user</module>
-    <module>service.lib</module>
-    <module>resources.a</module>
-    <module>modulepath.service.test</module>
-    <module>classpath.service.test</module>
-    <module>service.image</module>
-  </modules>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.atomos</groupId>
+		<artifactId>atomos</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<packaging>pom</packaging>
+	<artifactId>atomos.tests</artifactId>
+	<modules>
+		<module>service.contract</module>
+		<module>service.impl</module>
+		<module>service.impl.activator</module>
+		<module>service.impl.a</module>
+		<module>service.impl.b</module>
+		<module>service.user</module>
+		<module>service.lib</module>
+		<module>resources.a</module>
+		<module>modulepath.service.test</module>
+		<module>classpath.service.test</module>
+		<module>service.image</module>
+	</modules>
 </project>

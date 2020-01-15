@@ -31,7 +31,9 @@ public class AtomosRuntimeClassPath extends AtomosRuntimeBase {
 	private AtomosLayer createBootLayer() {
 		lockWrite();
 		try {
-			AtomosLayerBase result = new AtomosLayerClassPath(Collections.emptyList(), nextLayerId.getAndIncrement(), "boot", LoaderType.SINGLE);
+			AtomosLayerBase result = new AtomosLayerClassPath(
+					Collections.emptyList(), nextLayerId.getAndIncrement(),
+					"boot", LoaderType.SINGLE);
 			addAtomosLayer(result);
 			return result;
 		} finally {
@@ -40,14 +42,18 @@ public class AtomosRuntimeClassPath extends AtomosRuntimeBase {
 	}
 
 	@Override
-	protected AtomosLayer addLayer(List<AtomosLayer> parents, String name, long id, LoaderType loaderType,
-			Path... paths) {
-		throw new UnsupportedOperationException("Cannot add module layers when Atomos is not loaded as module.");
+	protected AtomosLayer addLayer(List<AtomosLayer> parents, String name,
+			long id, LoaderType loaderType, Path... paths) {
+		throw new UnsupportedOperationException(
+				"Cannot add module layers when Atomos is not loaded as module.");
 	}
 
 	@Override
 	protected ConnectFrameworkFactory findFrameworkFactory() {
-		Iterator<ConnectFrameworkFactory> itr = ServiceLoader.load(ConnectFrameworkFactory.class, getClass().getClassLoader()).iterator();
+		Iterator<ConnectFrameworkFactory> itr = ServiceLoader
+				.load(ConnectFrameworkFactory.class,
+						getClass().getClassLoader())
+				.iterator();
 		if (itr.hasNext()) {
 			return itr.next();
 		}
@@ -60,18 +66,18 @@ public class AtomosRuntimeClassPath extends AtomosRuntimeBase {
 	}
 
 	@Override
-	protected void filterBasedOnReadEdges(AtomosBundleInfo atomosBundle, Collection<BundleCapability> candidates) {
+	protected void filterBasedOnReadEdges(AtomosBundleInfo atomosBundle,
+			Collection<BundleCapability> candidates) {
 		filterNotVisible(atomosBundle, candidates);
 	}
 
 	public class AtomosLayerClassPath extends AtomosLayerBase {
 		private final Set<AtomosBundleInfoBase> atomosBundles;
-		protected AtomosLayerClassPath(List<AtomosLayer> parents, long id, String name, LoaderType loaderType,
-				Path... paths) {
+		protected AtomosLayerClassPath(List<AtomosLayer> parents, long id,
+				String name, LoaderType loaderType, Path... paths) {
 			super(parents, id, name, loaderType, paths);
 			atomosBundles = findClassPathAtomosBundles();
 		}
-
 
 		@Override
 		public final Set<AtomosBundleInfo> getAtomosBundles() {
@@ -79,14 +85,15 @@ public class AtomosRuntimeClassPath extends AtomosRuntimeBase {
 		}
 
 		@Override
-		protected void findBootLayerAtomosBundles(Set<AtomosBundleInfoBase> result) {
+		protected void findBootLayerAtomosBundles(
+				Set<AtomosBundleInfoBase> result) {
 			// do nothing for class path runtime case
 		}
 	}
 
 	@Override
 	public AtomosLayer getBootLayer() {
-		return bootLayer ;
+		return bootLayer;
 	}
 
 	@Override

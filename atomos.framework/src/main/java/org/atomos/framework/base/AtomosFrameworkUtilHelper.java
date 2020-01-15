@@ -29,10 +29,9 @@ public class AtomosFrameworkUtilHelper implements FrameworkUtilHelper {
 
 	@Override
 	public Optional<Bundle> getBundle(Class<?> classFromBundle) {
-		return helpers.stream()
-			.map(h -> h.getBundle(classFromBundle)) //
-			.filter(Optional::isPresent) //
-			.map(Optional::get) //
-			.findFirst();
+		return helpers.stream().map(h -> h.getBundle(classFromBundle)) //
+				.filter(Optional::isPresent) //
+				.map(Optional::get) //
+				.findFirst();
 	}
 }

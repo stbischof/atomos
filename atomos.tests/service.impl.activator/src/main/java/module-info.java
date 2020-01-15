@@ -8,8 +8,9 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-open module service.impl.activator {
-	requires transitive service.contract;
-	requires atomos.framework;
-	requires static osgi.annotation;
+open module service.impl.activator
+{
+    requires transitive service.contract;
+    requires atomos.framework;
+    requires static osgi.annotation;
 }

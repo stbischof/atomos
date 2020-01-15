@@ -24,7 +24,10 @@ import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleRevision;
 
-public class AtomosFrameworkHooks implements ResolverHookFactory, CollisionHook {
+public class AtomosFrameworkHooks
+		implements
+			ResolverHookFactory,
+			CollisionHook {
 	public class AtomosResolverHook implements ResolverHook {
 
 		@Override
@@ -35,23 +38,27 @@ public class AtomosFrameworkHooks implements ResolverHookFactory, CollisionHook 
 		@Override
 		public void filterSingletonCollisions(BundleCapability singleton,
 				Collection<BundleCapability> collisionCandidates) {
-			AtomosBundleInfo atomosBundle = atomosRuntime.getByOSGiLocation(singleton.getRevision().getBundle().getLocation());
+			AtomosBundleInfo atomosBundle = atomosRuntime.getByOSGiLocation(
+					singleton.getRevision().getBundle().getLocation());
 			atomosRuntime.filterNotVisible(atomosBundle, collisionCandidates);
 		}
 
 		@Override
-		public void filterMatches(BundleRequirement requirement, Collection<BundleCapability> candidates) {
-			AtomosBundleInfo atomosBundle = atomosRuntime.getByOSGiLocation(requirement.getRevision().getBundle().getLocation());
+		public void filterMatches(BundleRequirement requirement,
+				Collection<BundleCapability> candidates) {
+			AtomosBundleInfo atomosBundle = atomosRuntime.getByOSGiLocation(
+					requirement.getRevision().getBundle().getLocation());
 			switch (requirement.getNamespace()) {
-			case PackageNamespace.PACKAGE_NAMESPACE:
-			case BundleNamespace.BUNDLE_NAMESPACE:
-				atomosRuntime.filterBasedOnReadEdges(atomosBundle, candidates);
-				return;
-			default:
-				atomosRuntime.filterNotVisible(atomosBundle, candidates);
-				return;
+				case PackageNamespace.PACKAGE_NAMESPACE :
+				case BundleNamespace.BUNDLE_NAMESPACE :
+					atomosRuntime.filterBasedOnReadEdges(atomosBundle,
+							candidates);
+					return;
+				default :
+					atomosRuntime.filterNotVisible(atomosBundle, candidates);
+					return;
 			}
-			
+
 		}
 
 		@Override
@@ -69,15 +76,21 @@ public class AtomosFrameworkHooks implements ResolverHookFactory, CollisionHook 
 		return new AtomosResolverHook();
 	}
 	@Override
-	public void filterCollisions(int operationType, Bundle target, Collection<Bundle> collisionCandidates) {
-		AtomosBundleInfo currentlyInstalling = atomosRuntime.currentlyInstalling();
+	public void filterCollisions(int operationType, Bundle target,
+			Collection<Bundle> collisionCandidates) {
+		AtomosBundleInfo currentlyInstalling = atomosRuntime
+				.currentlyInstalling();
 		if (currentlyInstalling != null) {
-			for (Iterator<Bundle> iCands = collisionCandidates.iterator(); iCands.hasNext();) {
+			for (Iterator<Bundle> iCands = collisionCandidates
+					.iterator(); iCands.hasNext();) {
 				Bundle b = iCands.next();
-				AtomosBundleInfo candidate = atomosRuntime.getAtomosBundle(b.getLocation());
+				AtomosBundleInfo candidate = atomosRuntime
+						.getAtomosBundle(b.getLocation());
 				if (candidate != null) {
 					// Only other atomos bundles can be filtered out
-					if (!atomosRuntime.isInLayerHierarchy(currentlyInstalling.getAtomosLayer(), candidate.getAtomosLayer())) {
+					if (!atomosRuntime.isInLayerHierarchy(
+							currentlyInstalling.getAtomosLayer(),
+							candidate.getAtomosLayer())) {
 						iCands.remove();
 					}
 				}

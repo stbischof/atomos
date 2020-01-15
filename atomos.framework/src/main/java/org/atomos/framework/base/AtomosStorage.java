@@ -39,17 +39,20 @@ public class AtomosStorage {
 	private final static int VERSION = 1;
 	private final String ATOMOS_STORE = "atomosStore.data";
 	private final AtomosRuntimeBase atomosRuntime;
-	
+
 	public AtomosStorage(AtomosRuntimeBase atomosRuntime) {
 		this.atomosRuntime = atomosRuntime;
 	}
 
 	void loadLayers(File root) throws IOException {
 		atomosRuntime.lockWrite();
-		try (DataInputStream in = new DataInputStream(new BufferedInputStream(new FileInputStream(new File(root, ATOMOS_STORE))))) {
+		try (DataInputStream in = new DataInputStream(new BufferedInputStream(
+				new FileInputStream(new File(root, ATOMOS_STORE))))) {
 			int persistentVersion = in.readInt();
 			if (persistentVersion > VERSION) {
-				throw new IOException("Atomos persistent version is greater than supported version: " + VERSION + "<" + persistentVersion);
+				throw new IOException(
+						"Atomos persistent version is greater than supported version: "
+								+ VERSION + "<" + persistentVersion);
 			}
 			long nextLayerId = in.readLong();
 			int numLayers = in.readInt();
@@ -57,7 +60,7 @@ public class AtomosStorage {
 				readLayer(in);
 			}
 			atomosRuntime.nextLayerId.set(nextLayerId);
-		} catch (FileNotFoundException e){
+		} catch (FileNotFoundException e) {
 			// ignore no file
 		} finally {
 			atomosRuntime.unlockWrite();
@@ -67,10 +70,13 @@ public class AtomosStorage {
 	void saveLayers(File root, Bundle[] bundles) throws IOException {
 		File atomosStore = new File(root, ATOMOS_STORE);
 		atomosRuntime.lockRead();
-		try (DataOutputStream out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(atomosStore)))){
+		try (DataOutputStream out = new DataOutputStream(
+				new BufferedOutputStream(new FileOutputStream(atomosStore)))) {
 			out.writeInt(VERSION);
 			out.writeLong(atomosRuntime.nextLayerId.get());
-			List<AtomosLayerBase> writeOrder = getLayerWriteOrder((AtomosLayerBase) atomosRuntime.getBootLayer(), new HashSet<>(), new ArrayList<>());
+			List<AtomosLayerBase> writeOrder = getLayerWriteOrder(
+					(AtomosLayerBase) atomosRuntime.getBootLayer(),
+					new HashSet<>(), new ArrayList<>());
 			out.writeInt(writeOrder.size());
 			for (AtomosLayerBase layer : writeOrder) {
 				writeLayer(layer, out);
@@ -79,7 +85,8 @@ public class AtomosStorage {
 			out.writeInt(bundles.length);
 			for (Bundle b : bundles) {
 				String osgiLocation = b.getLocation();
-				AtomosBundleInfo atomosBundle = atomosRuntime.getByOSGiLocation(osgiLocation);
+				AtomosBundleInfo atomosBundle = atomosRuntime
+						.getByOSGiLocation(osgiLocation);
 				if (atomosBundle != null) {
 					out.writeBoolean(true);
 					out.writeUTF(osgiLocation);
@@ -93,7 +100,8 @@ public class AtomosStorage {
 		}
 	}
 
-	private List<AtomosLayerBase> getLayerWriteOrder(AtomosLayer layer, Set<AtomosLayer> visited, List<AtomosLayerBase> result) {
+	private List<AtomosLayerBase> getLayerWriteOrder(AtomosLayer layer,
+			Set<AtomosLayer> visited, List<AtomosLayerBase> result) {
 		if (!visited.add(layer)) {
 			return result;
 		}
@@ -135,7 +143,8 @@ public class AtomosStorage {
 			long parentId = in.readLong();
 			AtomosLayerBase parent = atomosRuntime.getById(parentId);
 			if (parent == null) {
-				throw new IllegalArgumentException("Missing parent with id: " + parentId);
+				throw new IllegalArgumentException(
+						"Missing parent with id: " + parentId);
 			}
 			parents.add(parent);
 		}
@@ -143,7 +152,8 @@ public class AtomosStorage {
 			try {
 				atomosRuntime.addLayer(parents, name, id, loaderType, paths);
 			} catch (Exception e) {
-				throw new IllegalArgumentException("Error adding persistent layer: " + e.getMessage());
+				throw new IllegalArgumentException(
+						"Error adding persistent layer: " + e.getMessage());
 			}
 		}
 
@@ -151,19 +161,23 @@ public class AtomosStorage {
 		for (int i = 0; i < numBundles; i++) {
 			String osgiLocation = in.readUTF();
 			String atomosLocation = in.readUTF();
-			AtomosBundleInfoBase atomosBundle = atomosRuntime.getByAtomosLocation(atomosLocation);
+			AtomosBundleInfoBase atomosBundle = atomosRuntime
+					.getByAtomosLocation(atomosLocation);
 			if (atomosBundle != null) {
 				int firstColon = osgiLocation.indexOf(':');
 				if (firstColon >= 0) {
-					if (atomosLocation.equals(osgiLocation.substring(firstColon + 1))) {
-						atomosRuntime.addToInstalledBundles(osgiLocation, atomosBundle);
+					if (atomosLocation
+							.equals(osgiLocation.substring(firstColon + 1))) {
+						atomosRuntime.addToInstalledBundles(osgiLocation,
+								atomosBundle);
 					}
 				}
 			}
 		}
 	}
 
-	private void writeLayer(AtomosLayerBase layer, DataOutputStream out) throws IOException {
+	private void writeLayer(AtomosLayerBase layer, DataOutputStream out)
+			throws IOException {
 		out.writeUTF(layer.getName());
 		out.writeLong(layer.getId());
 		out.writeUTF(layer.getLoaderType().toString());
@@ -177,10 +191,12 @@ public class AtomosStorage {
 		for (AtomosLayer parent : parents) {
 			out.writeLong(((AtomosLayerBase) parent).getId());
 		}
-		Collection<String> installedLocations = atomosRuntime.getInstalledLocations(layer);
+		Collection<String> installedLocations = atomosRuntime
+				.getInstalledLocations(layer);
 		out.writeInt(installedLocations.size());
 		for (String osgiLocation : installedLocations) {
-			AtomosBundleInfoBase atomosBundle = atomosRuntime.getByOSGiLocation(osgiLocation);
+			AtomosBundleInfoBase atomosBundle = atomosRuntime
+					.getByOSGiLocation(osgiLocation);
 			String atomosLocation = atomosBundle.getLocation();
 			out.writeUTF(osgiLocation);
 			out.writeUTF(atomosLocation);

@@ -8,7 +8,9 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-module service.contract {
-	requires static osgi.annotation;
-	exports org.atomos.service.contract;
+module service.contract
+{
+    requires static osgi.annotation;
+
+    exports org.atomos.service.contract;
 }

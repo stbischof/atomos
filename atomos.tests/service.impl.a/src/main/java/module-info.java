@@ -8,7 +8,8 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-open module service.impl.a {
-	requires transitive service.contract;
-	requires static org.osgi.service.component.annotations;
+open module service.impl.a
+{
+    requires transitive service.contract;
+    requires static org.osgi.service.component.annotations;
 }

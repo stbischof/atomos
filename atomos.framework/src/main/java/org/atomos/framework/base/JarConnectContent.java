@@ -45,7 +45,7 @@ public class JarConnectContent implements ConnectContent {
 	@Override
 	public Iterable<String> getEntries() throws IOException {
 		return () -> new Iterator<String>() {
-			final Enumeration<? extends ZipEntry> entries  = zipFile.entries();
+			final Enumeration<? extends ZipEntry> entries = zipFile.entries();
 			@Override
 			public boolean hasNext() {
 				return entries.hasMoreElements();
@@ -53,7 +53,7 @@ public class JarConnectContent implements ConnectContent {
 
 			@Override
 			public String next() {
-				return entries.nextElement().getName(); 
+				return entries.nextElement().getName();
 			}
 		};
 	}
@@ -98,6 +98,6 @@ public class JarConnectContent implements ConnectContent {
 		public String getName() {
 			return entry.getName();
 		}
-		
+
 	}
 }

@@ -47,7 +47,7 @@ public class SubstrateIndexConnectContent implements ConnectContent {
 		public InputStream getInputStream() throws IOException {
 			return resource.openStream();
 		}
-		
+
 	}
 
 	final String index;
@@ -71,7 +71,8 @@ public class SubstrateIndexConnectContent implements ConnectContent {
 	@Override
 	public Optional<ConnectEntry> getEntry(String name) {
 		if (entries.contains(name)) {
-			URL resource = getClass().getResource(AtomosRuntimeBase.ATOMOS_BUNDLES + index + '/' + name);
+			URL resource = getClass().getResource(
+					AtomosRuntimeBase.ATOMOS_BUNDLES + index + '/' + name);
 			if (resource != null) {
 				return Optional.of(new URLConnectEntry(name, resource));
 			}

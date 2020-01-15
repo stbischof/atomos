@@ -61,14 +61,15 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 	private static final String OSGI_CONTRACT_NAMESPACE = "osgi.contract";
 	private static final String OSGI_VERSION_ATTR = "version:Version";
 	private final Module thisModule = AtomosRuntimeModules.class.getModule();
-	private final Configuration thisConfig = thisModule.getLayer() == null ? null : thisModule.getLayer().configuration();
+	private final Configuration thisConfig = thisModule.getLayer() == null
+			? null
+			: thisModule.getLayer().configuration();
 	private final Map<Configuration, AtomosLayerBase> byConfig = new HashMap<>();
 	private final AtomosLayer bootLayer = createBootLayer();
 
 	private AtomosLayer createBootLayer() {
 		return createAtomosLayer(thisConfig, "boot", -1, LoaderType.SINGLE);
 	}
-
 
 	AtomosLayerBase getByConfig(Configuration config) {
 		lockRead();
@@ -80,14 +81,20 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 	}
 
 	@Override
-	protected AtomosLayer addLayer(List<AtomosLayer> parents, String name, long id, LoaderType loaderType, Path... paths) {
+	protected AtomosLayer addLayer(List<AtomosLayer> parents, String name,
+			long id, LoaderType loaderType, Path... paths) {
 		if (bootLayer.adapt(ModuleLayer.class).isEmpty()) {
-			throw new UnsupportedOperationException("Cannot add module layers when Atomos is not loaded as module.");
+			throw new UnsupportedOperationException(
+					"Cannot add module layers when Atomos is not loaded as module.");
 		}
-		List<Configuration> parentConfigs = parents.stream().map((l) -> l.adapt(ModuleLayer.class).get().configuration()).collect(Collectors.toList());
+		List<Configuration> parentConfigs = parents.stream()
+				.map((l) -> l.adapt(ModuleLayer.class).get().configuration())
+				.collect(Collectors.toList());
 		ModuleFinder finder = ModuleFinder.of(paths);
-		List<String> roots = finder.findAll().stream().map((m) -> m.descriptor().name()).collect(Collectors.toList());
-		Configuration config = Configuration.resolve(ModuleFinder.of(), parentConfigs, ModuleFinder.of(paths), roots);
+		List<String> roots = finder.findAll().stream()
+				.map((m) -> m.descriptor().name()).collect(Collectors.toList());
+		Configuration config = Configuration.resolve(ModuleFinder.of(),
+				parentConfigs, ModuleFinder.of(paths), roots);
 		return createAtomosLayer(config, name, id, loaderType, paths);
 	}
 
@@ -95,27 +102,30 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 	protected ConnectFrameworkFactory findFrameworkFactory() {
 		ServiceLoader<ConnectFrameworkFactory> loader;
 		if (AtomosRuntime.class.getModule().getLayer() == null) {
-			loader = ServiceLoader.load(ConnectFrameworkFactory.class, getClass().getClassLoader());
+			loader = ServiceLoader.load(ConnectFrameworkFactory.class,
+					getClass().getClassLoader());
 		} else {
 			loader = ServiceLoader.load( //
 					getClass().getModule().getLayer(), //
 					ConnectFrameworkFactory.class);
 		}
 		ConnectFrameworkFactory factory = loader.findFirst() //
-				.orElseThrow(() -> new RuntimeException("No Framework implementation found."));
+				.orElseThrow(() -> new RuntimeException(
+						"No Framework implementation found."));
 		return factory;
 	}
 
-
-
-	AtomosLayerBase createAtomosLayer(Configuration config, String name, long id, LoaderType loaderType, Path... paths) {
+	AtomosLayerBase createAtomosLayer(Configuration config, String name,
+			long id, LoaderType loaderType, Path... paths) {
 		AtomosLayerBase existing = getByConfig(config);
 		if (existing != null) {
 			return existing;
 		}
 		existing = getById(id);
 		if (existing != null) {
-			throw new IllegalArgumentException("The a layer already exists with the id: " + id + " " + existing.getName());
+			throw new IllegalArgumentException(
+					"The a layer already exists with the id: " + id + " "
+							+ existing.getName());
 		}
 		lockWrite();
 		try {
@@ -124,7 +134,8 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 			if (Configuration.empty().equals(config)) {
 				name = "empty";
 			}
-			AtomosLayerModules result = new AtomosLayerModules(config, parents, id, name, loaderType, paths);
+			AtomosLayerModules result = new AtomosLayerModules(config, parents,
+					id, name, loaderType, paths);
 			addAtomosLayer(result);
 			return result;
 		} finally {
@@ -142,10 +153,12 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 			if (existingParent != null) {
 				found.add(existingParent);
 			} else {
-				// If it didn't exist already we really don't know what type of loader it is;
+				// If it didn't exist already we really don't know what type of
+				// loader it is;
 				// just use SINGLE for now
 				// We also don't know what paths it could be using
-				found.add(createAtomosLayer(parentConfig, name, -1, LoaderType.SINGLE));
+				found.add(createAtomosLayer(parentConfig, name, -1,
+						LoaderType.SINGLE));
 			}
 		}
 		return Collections.unmodifiableList(found);
@@ -153,18 +166,22 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 
 	@Override
 	protected void addingLayer(AtomosLayerBase atomosLayer) {
-		Configuration config = atomosLayer.adapt(ModuleLayer.class).map((m) -> m.configuration()).orElse(null);
+		Configuration config = atomosLayer.adapt(ModuleLayer.class)
+				.map((m) -> m.configuration()).orElse(null);
 		if (byConfig.putIfAbsent(config, atomosLayer) != null) {
-			throw new IllegalStateException("AtomosLayer already exists for configuration.");
+			throw new IllegalStateException(
+					"AtomosLayer already exists for configuration.");
 		}
 	}
 
 	@Override
 	protected void removedLayer(AtomosLayerBase atomosLayer) {
-		byConfig.remove(atomosLayer.adapt(ModuleLayer.class).map((l) -> l.configuration()).orElse(null));
+		byConfig.remove(atomosLayer.adapt(ModuleLayer.class)
+				.map((l) -> l.configuration()).orElse(null));
 	}
 
-	ModuleLayer findModuleLayer(Configuration config, List<AtomosLayer> parents, LoaderType loaderType) {
+	ModuleLayer findModuleLayer(Configuration config, List<AtomosLayer> parents,
+			LoaderType loaderType) {
 		if (config == null) {
 			return null;
 		}
@@ -174,56 +191,68 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 		if (Configuration.empty().equals(config)) {
 			return ModuleLayer.empty();
 		}
-		List<ModuleLayer> parentLayers = parents.stream().sequential().map((a) -> a.adapt(ModuleLayer.class).get()).collect(Collectors.toList());
+		List<ModuleLayer> parentLayers = parents.stream().sequential()
+				.map((a) -> a.adapt(ModuleLayer.class).get())
+				.collect(Collectors.toList());
 		ModuleLayer.Controller controller;
 		switch (loaderType) {
-		case SINGLE:
-			return ModuleLayer.defineModulesWithOneLoader(config, parentLayers, null).layer();
-		case OSGI:
-			ConcurrentHashMap<String, ModuleConnectLoader> classLoaders = new ConcurrentHashMap<>();
-			Function<String, ClassLoader> clf = (moduleName) -> {
-				ResolvedModule m = config.findModule(moduleName).orElse(null);
-				if (m == null || m.configuration() != config) {
-					return null;
-				}
-
-				return classLoaders.computeIfAbsent(moduleName, (mn) -> {
-					try {
-						return new ModuleConnectLoader(m, this);
-					} catch (IOException e) {
-						throw new UncheckedIOException(e);
+			case SINGLE :
+				return ModuleLayer
+						.defineModulesWithOneLoader(config, parentLayers, null)
+						.layer();
+			case OSGI :
+				ConcurrentHashMap<String, ModuleConnectLoader> classLoaders = new ConcurrentHashMap<>();
+				Function<String, ClassLoader> clf = (moduleName) -> {
+					ResolvedModule m = config.findModule(moduleName)
+							.orElse(null);
+					if (m == null || m.configuration() != config) {
+						return null;
 					}
+
+					return classLoaders.computeIfAbsent(moduleName, (mn) -> {
+						try {
+							return new ModuleConnectLoader(m, this);
+						} catch (IOException e) {
+							throw new UncheckedIOException(e);
+						}
+					});
+				};
+				controller = ModuleLayer.defineModules(config, parentLayers,
+						clf);
+				controller.layer().modules().forEach((m) -> {
+					ModuleConnectLoader loader = (ModuleConnectLoader) m
+							.getClassLoader();
+					loader.initEdges(m, config, classLoaders);
 				});
-			};
-			controller = ModuleLayer.defineModules(config, parentLayers, clf);
-			controller.layer().modules().forEach((m) -> {
-				ModuleConnectLoader loader = (ModuleConnectLoader) m.getClassLoader();
-				loader.initEdges(m,  config, classLoaders);
-			});
-			return controller.layer();
-		case MANY:
-			return ModuleLayer.defineModulesWithManyLoaders(config, parentLayers, null).layer();
-		default:
-			throw new UnsupportedOperationException(loaderType.toString());
+				return controller.layer();
+			case MANY :
+				return ModuleLayer.defineModulesWithManyLoaders(config,
+						parentLayers, null).layer();
+			default :
+				throw new UnsupportedOperationException(loaderType.toString());
 		}
 	}
-
 
 	@Override
 	public AtomosLayer addModules(String name, Path path) {
 		if (modulesSupported()) {
 			if (path == null) {
-				ResolvedModule resolved = thisConfig.findModule(AtomosRuntime.class.getModule().getName()).get();
+				ResolvedModule resolved = thisConfig
+						.findModule(AtomosRuntime.class.getModule().getName())
+						.get();
 				URI location = resolved.reference().location().get();
 				if (location.getScheme().equals("file")) {
-					// Use the module location as the relative base to locate the modules folder
+					// Use the module location as the relative base to locate
+					// the modules folder
 					File thisModuleFile = new File(location);
-					File candidate = new File(thisModuleFile.getParent(), "modules");
+					File candidate = new File(thisModuleFile.getParent(),
+							"modules");
 					path = candidate.isDirectory() ? candidate.toPath() : null;
 				}
 			}
 			if (path != null) {
-				return addLayer(Collections.singletonList(getBootLayer()), "modules", LoaderType.OSGI, path);
+				return addLayer(Collections.singletonList(getBootLayer()),
+						"modules", LoaderType.OSGI, path);
 			} else {
 				return null;
 			}
@@ -251,17 +280,19 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 		return super.getAtomosKey(classFromBundle);
 	}
 
-	protected Optional<Map<String, String>> createManifest(ConnectContent connectContent, Module module) {
-		return Optional.of(connectContent.getEntry("META-INF/MANIFEST.MF").map(
-				(mf) -> createManifest(mf, module)).orElseGet(
-						() -> createManifest((ConnectEntry)null, module)));
+	protected Optional<Map<String, String>> createManifest(
+			ConnectContent connectContent, Module module) {
+		return Optional.of(connectContent.getEntry("META-INF/MANIFEST.MF")
+				.map((mf) -> createManifest(mf, module))
+				.orElseGet(() -> createManifest((ConnectEntry) null, module)));
 
 	}
 
-	private Map<String, String> createManifest(ConnectEntry mfEntry, Module module) {
+	private Map<String, String> createManifest(ConnectEntry mfEntry,
+			Module module) {
 		Map<String, String> result = new HashMap<>();
 		if (mfEntry != null) {
-	 		try {
+			try {
 				Manifest mf = new Manifest(mfEntry.getInputStream());
 				Attributes mainAttrs = mf.getMainAttributes();
 				for (Object key : mainAttrs.keySet()) {
@@ -269,7 +300,8 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 					result.put(name.toString(), mainAttrs.getValue(name));
 				}
 			} catch (IOException e) {
-				throw new UncheckedIOException("Error reading connect manfest.", e);
+				throw new UncheckedIOException("Error reading connect manfest.",
+						e);
 			}
 		}
 
@@ -278,10 +310,14 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 		StringBuilder requirements = new StringBuilder();
 		String bsn = result.get(Constants.BUNDLE_SYMBOLICNAME);
 		if (bsn == null) {
-			// set the symbolic name for the module; don't allow fragments to attach
-			result.put(Constants.BUNDLE_SYMBOLICNAME, desc.name() + "; " + Constants.FRAGMENT_ATTACHMENT_DIRECTIVE + ":=" + Constants.FRAGMENT_ATTACHMENT_NEVER);
+			// set the symbolic name for the module; don't allow fragments to
+			// attach
+			result.put(Constants.BUNDLE_SYMBOLICNAME,
+					desc.name() + "; " + Constants.FRAGMENT_ATTACHMENT_DIRECTIVE
+							+ ":=" + Constants.FRAGMENT_ATTACHMENT_NEVER);
 
-			// set the version; use empty version in case of missing or format issues
+			// set the version; use empty version in case of missing or format
+			// issues
 			Version version = desc.version().map((v) -> {
 				try {
 					return Version.valueOf(v.toString());
@@ -302,7 +338,8 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 				// TODO map targets to x-friends directive?
 			}
 			if (exportPackageHeader.length() > 0) {
-				result.put(Constants.EXPORT_PACKAGE, exportPackageHeader.toString());
+				result.put(Constants.EXPORT_PACKAGE,
+						exportPackageHeader.toString());
 			}
 
 			// add a contract based on the module name
@@ -316,21 +353,27 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 					requireBundleHeader.append(", ");
 				}
 
-
 				requireBundleHeader.append(requires.name()).append("; ");
 				// determine the resolution value based on the STATIC modifier
-				String resolution = requires.modifiers().contains(Requires.Modifier.STATIC) ? Namespace.RESOLUTION_OPTIONAL
-						: Namespace.RESOLUTION_MANDATORY;
-				requireBundleHeader.append(Constants.RESOLUTION_DIRECTIVE).append(":=").append(resolution).append("; ");
-				// determine the visibility value based on the TRANSITIVE modifier
-				String visibility = requires.modifiers().contains(Requires.Modifier.TRANSITIVE)
-						? BundleNamespace.VISIBILITY_REEXPORT
-						: BundleNamespace.VISIBILITY_PRIVATE;
-				requireBundleHeader.append(Constants.VISIBILITY_DIRECTIVE).append(":=").append(visibility);
+				String resolution = requires.modifiers()
+						.contains(Requires.Modifier.STATIC)
+								? Namespace.RESOLUTION_OPTIONAL
+								: Namespace.RESOLUTION_MANDATORY;
+				requireBundleHeader.append(Constants.RESOLUTION_DIRECTIVE)
+						.append(":=").append(resolution).append("; ");
+				// determine the visibility value based on the TRANSITIVE
+				// modifier
+				String visibility = requires.modifiers()
+						.contains(Requires.Modifier.TRANSITIVE)
+								? BundleNamespace.VISIBILITY_REEXPORT
+								: BundleNamespace.VISIBILITY_PRIVATE;
+				requireBundleHeader.append(Constants.VISIBILITY_DIRECTIVE)
+						.append(":=").append(visibility);
 
 			}
 			if (requireBundleHeader.length() > 0) {
-				result.put(Constants.REQUIRE_BUNDLE, requireBundleHeader.toString());
+				result.put(Constants.REQUIRE_BUNDLE,
+						requireBundleHeader.toString());
 			}
 		} else {
 			String origCaps = result.get(Constants.PROVIDE_CAPABILITY);
@@ -342,15 +385,21 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 				requirements.append(origReqs);
 			}
 		}
-		// map provides to a made up namespace only to give proper resolution errors
+		// map provides to a made up namespace only to give proper resolution
+		// errors
 		// (although JPMS will likely complain first
 		for (Provides provides : desc.provides()) {
 			if (capabilities.length() > 0) {
 				capabilities.append(", ");
 			}
-			capabilities.append(JavaServiceNamespace.JAVA_SERVICE_NAMESPACE).append("; ");
-			capabilities.append(JavaServiceNamespace.JAVA_SERVICE_NAMESPACE).append("=").append(provides.service()).append("; ");
-			capabilities.append(JavaServiceNamespace.CAPABILITY_PROVIDES_WITH).append("=\"").append(provides.providers().stream().collect(Collectors.joining(","))).append("\"");
+			capabilities.append(JavaServiceNamespace.JAVA_SERVICE_NAMESPACE)
+					.append("; ");
+			capabilities.append(JavaServiceNamespace.JAVA_SERVICE_NAMESPACE)
+					.append("=").append(provides.service()).append("; ");
+			capabilities.append(JavaServiceNamespace.CAPABILITY_PROVIDES_WITH)
+					.append("=\"").append(provides.providers().stream()
+							.collect(Collectors.joining(",")))
+					.append("\"");
 		}
 
 		// map uses to a made up namespace only to give proper resolution errors
@@ -359,9 +408,14 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 			if (requirements.length() > 0) {
 				requirements.append(", ");
 			}
-			requirements.append(JavaServiceNamespace.JAVA_SERVICE_NAMESPACE).append("; ");
-			requirements.append(Constants.RESOLUTION_DIRECTIVE).append(":=").append(Constants.RESOLUTION_OPTIONAL).append("; ");
-			requirements.append(Constants.FILTER_DIRECTIVE).append(":=").append("\"(").append(JavaServiceNamespace.JAVA_SERVICE_NAMESPACE).append("=").append(uses).append(")\"");
+			requirements.append(JavaServiceNamespace.JAVA_SERVICE_NAMESPACE)
+					.append("; ");
+			requirements.append(Constants.RESOLUTION_DIRECTIVE).append(":=")
+					.append(Constants.RESOLUTION_OPTIONAL).append("; ");
+			requirements.append(Constants.FILTER_DIRECTIVE).append(":=")
+					.append("\"(")
+					.append(JavaServiceNamespace.JAVA_SERVICE_NAMESPACE)
+					.append("=").append(uses).append(")\"");
 		}
 
 		if (capabilities.length() > 0) {
@@ -373,20 +427,26 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 		return result;
 	}
 
-	private void addOSGiContractCapability(StringBuilder capabilities, ModuleDescriptor desc, String version) {
+	private void addOSGiContractCapability(StringBuilder capabilities,
+			ModuleDescriptor desc, String version) {
 		if (capabilities.length() > 0) {
 			capabilities.append(", ");
 		}
-		capabilities.append(OSGI_CONTRACT_NAMESPACE).append("; ").append(OSGI_VERSION_ATTR).append("=").append(version);
+		capabilities.append(OSGI_CONTRACT_NAMESPACE).append("; ")
+				.append(OSGI_VERSION_ATTR).append("=").append(version);
 		Set<Exports> exports = desc.exports();
 		if (!exports.isEmpty()) {
-			String uses = exports.stream().map(e -> e.source()).sorted().collect(Collectors.joining(","));
-			capabilities.append("; ").append(Namespace.CAPABILITY_USES_DIRECTIVE).append("=\"").append(uses).append("\"");
+			String uses = exports.stream().map(e -> e.source()).sorted()
+					.collect(Collectors.joining(","));
+			capabilities.append("; ")
+					.append(Namespace.CAPABILITY_USES_DIRECTIVE).append("=\"")
+					.append(uses).append("\"");
 		}
 	}
 
 	@Override
-	protected void filterBasedOnReadEdges(AtomosBundleInfo atomosBundle, Collection<BundleCapability> candidates) {
+	protected void filterBasedOnReadEdges(AtomosBundleInfo atomosBundle,
+			Collection<BundleCapability> candidates) {
 		if (atomosBundle == null) {
 			// only do this for atomos bundles
 			return;
@@ -395,10 +455,13 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 		if (m == null) {
 			filterNotVisible(atomosBundle, candidates);
 		} else {
-			for (Iterator<BundleCapability> iCands = candidates.iterator(); iCands.hasNext();) {
+			for (Iterator<BundleCapability> iCands = candidates
+					.iterator(); iCands.hasNext();) {
 				BundleCapability candidate = iCands.next();
-				AtomosBundleInfo candidateAtomos = getByOSGiLocation(candidate.getRevision().getBundle().getLocation());
-				if (candidateAtomos == null || candidateAtomos.adapt(Module.class).isEmpty()) {
+				AtomosBundleInfo candidateAtomos = getByOSGiLocation(
+						candidate.getRevision().getBundle().getLocation());
+				if (candidateAtomos == null
+						|| candidateAtomos.adapt(Module.class).isEmpty()) {
 					iCands.remove();
 				} else {
 					if (!m.canRead(candidateAtomos.adapt(Module.class).get())) {
@@ -412,21 +475,27 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 	public class AtomosLayerModules extends AtomosLayerBase {
 		private final ModuleLayer moduleLayer;
 		private final Set<AtomosBundleInfoBase> atomosBundles;
-		AtomosLayerModules(Configuration config, List<AtomosLayer> parents, long id, String name, LoaderType loaderType, Path... paths) {
+		AtomosLayerModules(Configuration config, List<AtomosLayer> parents,
+				long id, String name, LoaderType loaderType, Path... paths) {
 			super(parents, id, name, loaderType, paths);
 			moduleLayer = findModuleLayer(config, parents, loaderType);
 			atomosBundles = findAtomosBundles();
 		}
 
 		private Set<AtomosBundleInfoBase> findAtomosBundles() {
-			return moduleLayer == null ? findClassPathAtomosBundles() : findModuleLayerAtomosBundles(moduleLayer);
+			return moduleLayer == null
+					? findClassPathAtomosBundles()
+					: findModuleLayerAtomosBundles(moduleLayer);
 		}
 
-		private Set<AtomosBundleInfoBase> findModuleLayerAtomosBundles(ModuleLayer searchLayer) {
-			Map<ModuleDescriptor, Module> descriptorMap = searchLayer.modules().stream()
+		private Set<AtomosBundleInfoBase> findModuleLayerAtomosBundles(
+				ModuleLayer searchLayer) {
+			Map<ModuleDescriptor, Module> descriptorMap = searchLayer.modules()
+					.stream()
 					.collect(Collectors.toMap(Module::getDescriptor, m -> (m)));
 			Set<AtomosBundleInfoBase> found = new LinkedHashSet<>();
-			for (ResolvedModule resolved : searchLayer.configuration().modules()) {
+			for (ResolvedModule resolved : searchLayer.configuration()
+					.modules()) {
 				// include only if it is not excluded
 				Module m = descriptorMap.get(resolved.reference().descriptor());
 				if (m == null) {
@@ -434,8 +503,11 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 				}
 
 				String location;
-				if (m.getDescriptor().provides().stream().anyMatch((p) -> FrameworkFactory.class.getName().equals(p.service()))) {
-					// we assume a module that provides the FrameworkFactory is the system bundle
+				if (m.getDescriptor().provides().stream()
+						.anyMatch((p) -> FrameworkFactory.class.getName()
+								.equals(p.service()))) {
+					// we assume a module that provides the FrameworkFactory is
+					// the system bundle
 					location = Constants.SYSTEM_BUNDLE_LOCATION;
 				} else {
 					location = resolved.reference().location().map((u) -> {
@@ -451,15 +523,17 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 					continue;
 				}
 
-				Version version = resolved.reference().descriptor().version().map((v) -> {
-					try {
-						return Version.valueOf(v.toString());
-					} catch (IllegalArgumentException e) {
-						return Version.emptyVersion;
-					}
-				}).orElse(Version.emptyVersion);
+				Version version = resolved.reference().descriptor().version()
+						.map((v) -> {
+							try {
+								return Version.valueOf(v.toString());
+							} catch (IllegalArgumentException e) {
+								return Version.emptyVersion;
+							}
+						}).orElse(Version.emptyVersion);
 
-				found.add(new AtomosBundleInfoModule(resolved, m, location, resolved.name(), version));
+				found.add(new AtomosBundleInfoModule(resolved, m, location,
+						resolved.name(), version));
 
 			}
 
@@ -482,8 +556,13 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 			 */
 			private final Module module;
 
-			public AtomosBundleInfoModule(ResolvedModule resolvedModule, Module module, String location, String symbolicName, Version version) {
-				super(location, symbolicName, version, new ModuleConnectContent(module, resolvedModule.reference(), AtomosRuntimeModules.this));
+			public AtomosBundleInfoModule(ResolvedModule resolvedModule,
+					Module module, String location, String symbolicName,
+					Version version) {
+				super(location, symbolicName, version,
+						new ModuleConnectContent(module,
+								resolvedModule.reference(),
+								AtomosRuntimeModules.this));
 				this.module = module;
 			}
 
@@ -508,7 +587,8 @@ public class AtomosRuntimeModules extends AtomosRuntimeBase {
 		}
 
 		@Override
-		protected void findBootLayerAtomosBundles(Set<AtomosBundleInfoBase> result) {
+		protected void findBootLayerAtomosBundles(
+				Set<AtomosBundleInfoBase> result) {
 			result.addAll(findModuleLayerAtomosBundles(ModuleLayer.boot()));
 		}
 	}

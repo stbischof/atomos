@@ -8,6 +8,7 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-open module resource.a {
-	exports org.atomos.resource;
+open module resource.a
+{
+    exports org.atomos.resource;
 }

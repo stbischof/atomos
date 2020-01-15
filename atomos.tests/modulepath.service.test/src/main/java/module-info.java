@@ -10,12 +10,14 @@ import org.atomos.framework.AtomosRuntime;
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-module service.test {
-	requires atomos.framework;
-	requires service.contract;
-	requires service.impl;
-	requires service.impl.activator;
-	requires org.apache.felix.scr;
-	requires osgi.promise;
-	uses AtomosRuntime;
+module service.test
+{
+    requires atomos.framework;
+    requires service.contract;
+    requires service.impl;
+    requires service.impl.activator;
+    requires org.apache.felix.scr;
+    requires osgi.promise;
+
+    uses AtomosRuntime;
 }

@@ -10,7 +10,6 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>classpath.service.test</artifactId>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.atomos</groupId>
@@ -55,9 +54,7 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>

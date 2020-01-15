@@ -28,7 +28,8 @@ public class FileConnectContent implements ConnectContent {
 		private final String name;
 		public FileConnectEntry(File entry, String name) {
 			this.entry = entry;
-			boolean endsInSlash = name.length() > 0 && name.charAt(name.length() - 1) == '/';
+			boolean endsInSlash = name.length() > 0
+					&& name.charAt(name.length() - 1) == '/';
 			if (entry.isDirectory()) {
 				if (!endsInSlash)
 					name += '/';
@@ -84,22 +85,23 @@ public class FileConnectContent implements ConnectContent {
 	@Override
 	public Iterable<String> getEntries() throws IOException {
 		Path rootPath = root.toPath();
-		return Files.find(rootPath, Integer.MAX_VALUE, (p, a) -> true).map((p) -> {
-			Path relative = rootPath.relativize(p);
-			StringBuilder builder = new StringBuilder();
-			for (Path path : relative) {
-				builder.append(path.getFileName());
-				if (Files.isDirectory(path)) {
-					builder.append('/');
-				}
-			}
-			return builder.toString();
-		}).collect(Collectors.toList());
+		return Files.find(rootPath, Integer.MAX_VALUE, (p, a) -> true)
+				.map((p) -> {
+					Path relative = rootPath.relativize(p);
+					StringBuilder builder = new StringBuilder();
+					for (Path path : relative) {
+						builder.append(path.getFileName());
+						if (Files.isDirectory(path)) {
+							builder.append('/');
+						}
+					}
+					return builder.toString();
+				}).collect(Collectors.toList());
 	}
 
 	@Override
 	public Optional<ConnectEntry> getEntry(final String name) {
-		return getFile(name).map((f)->new FileConnectEntry(f, name));
+		return getFile(name).map((f) -> new FileConnectEntry(f, name));
 	}
 
 	private Optional<File> getFile(String path) {
@@ -107,10 +109,12 @@ public class FileConnectContent implements ConnectContent {
 		if (!file.exists()) {
 			return Optional.empty();
 		}
-		final boolean checkInFile = path != null && path.indexOf(POINTER_UPPER_DIRECTORY) >= 0;
+		final boolean checkInFile = path != null
+				&& path.indexOf(POINTER_UPPER_DIRECTORY) >= 0;
 		if (checkInFile) {
 			try {
-				if (!file.getCanonicalPath().startsWith(root.getCanonicalPath())) {
+				if (!file.getCanonicalPath()
+						.startsWith(root.getCanonicalPath())) {
 					return Optional.empty();
 				}
 			} catch (IOException e) {

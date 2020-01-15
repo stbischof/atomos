@@ -27,7 +27,8 @@ public class SubstrateJarConnectContent implements ConnectContent {
 	private final String fileName;
 	private volatile ZipFile zipFile;
 
-	public SubstrateJarConnectContent(String fileName, AtomosRuntimeSubstrate runtime) {
+	public SubstrateJarConnectContent(String fileName,
+			AtomosRuntimeSubstrate runtime) {
 		this.fileName = fileName;
 		this.runtime = runtime;
 	}
@@ -36,7 +37,8 @@ public class SubstrateJarConnectContent implements ConnectContent {
 	public ConnectContent open() throws IOException {
 		ZipFile current = zipFile;
 		if (current == null) {
-			zipFile = new ZipFile(new File(runtime.getSubstrateLibDir(), fileName));
+			zipFile = new ZipFile(
+					new File(runtime.getSubstrateLibDir(), fileName));
 		}
 		return this;
 	}
@@ -58,7 +60,7 @@ public class SubstrateJarConnectContent implements ConnectContent {
 	@Override
 	public Iterable<String> getEntries() throws IOException {
 		return () -> new Iterator<String>() {
-			final Enumeration<? extends ZipEntry> entries  = zipFile.entries();
+			final Enumeration<? extends ZipEntry> entries = zipFile.entries();
 			@Override
 			public boolean hasNext() {
 				return entries.hasMoreElements();
@@ -66,7 +68,7 @@ public class SubstrateJarConnectContent implements ConnectContent {
 
 			@Override
 			public String next() {
-				return entries.nextElement().getName(); 
+				return entries.nextElement().getName();
 			}
 		};
 	}
@@ -111,6 +113,6 @@ public class SubstrateJarConnectContent implements ConnectContent {
 		public String getName() {
 			return entry.getName();
 		}
-		
+
 	}
 }

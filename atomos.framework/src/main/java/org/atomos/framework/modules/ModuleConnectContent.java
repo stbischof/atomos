@@ -29,7 +29,8 @@ public class ModuleConnectContent implements ConnectContent {
 	final AtomicReference<Optional<Map<String, String>>> headers = new AtomicReference<>();
 	volatile ModuleReader reader = null;
 
-	public ModuleConnectContent(Module module, ModuleReference reference, AtomosRuntimeModules atomosRuntime) {
+	public ModuleConnectContent(Module module, ModuleReference reference,
+			AtomosRuntimeModules atomosRuntime) {
 		this.module = module;
 		this.reference = reference;
 		this.atomosRuntime = atomosRuntime;
@@ -78,7 +79,8 @@ public class ModuleConnectContent implements ConnectContent {
 	@Override
 	public Optional<ConnectEntry> getEntry(String name) {
 		try {
-			return currentReader().find(name).map((u) -> new ModuleConnectEntry(name, u));
+			return currentReader().find(name)
+					.map((u) -> new ModuleConnectEntry(name, u));
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
@@ -131,6 +133,6 @@ public class ModuleConnectContent implements ConnectContent {
 		public String getName() {
 			return name;
 		}
-		
+
 	}
 }

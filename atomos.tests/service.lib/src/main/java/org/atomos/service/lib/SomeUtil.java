@@ -12,7 +12,8 @@ package org.atomos.service.lib;
 
 public class SomeUtil
 {
-	void doSomething(String msg) {
-		System.out.println("Doing something: " + msg);
-	}
+    void doSomething(String msg)
+    {
+        System.out.println("Doing something: " + msg);
+    }
 }

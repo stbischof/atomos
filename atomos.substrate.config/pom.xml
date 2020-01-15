@@ -10,7 +10,6 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<artifactId>atomos.substrate.config</artifactId>
-
 	<name>atomos.substrate.config</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -65,7 +64,7 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
 					<archive>
-						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF
+						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF 
 						</manifestFile>
 					</archive>
 				</configuration>

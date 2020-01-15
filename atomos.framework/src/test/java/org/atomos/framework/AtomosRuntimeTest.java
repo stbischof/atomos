@@ -24,19 +24,19 @@ public class AtomosRuntimeTest {
 		String[] args = {"a=1", "b=2"};
 		Map<String, String> map = AtomosRuntime.getConfiguration(args);
 		assertEquals(2, map.size());
-		assertEquals("1",map.get("a"));
-		assertEquals("2",map.get("b"));
+		assertEquals("1", map.get("a"));
+		assertEquals("2", map.get("b"));
 	}
-	
+
 	@Test
 	public void testRuntimeConfig() {
 		String[] args = {"calc=1+1=2", "separator=="};
 		Map<String, String> map = AtomosRuntime.getConfiguration(args);
 		assertEquals(2, map.size());
-		assertEquals("1+1=2",map.get("calc"));
-		assertEquals("=",map.get("separator"));
+		assertEquals("1+1=2", map.get("calc"));
+		assertEquals("=", map.get("separator"));
 	}
-	
+
 	@Test
 	public void testRuntimeConfigFilter() {
 		String[] args = {"nono", "no:no"};
@@ -44,21 +44,20 @@ public class AtomosRuntimeTest {
 		assertEquals(0, map.size());
 	}
 
-	
 	@Test
 	public void testRuntimeConfigSameKey() {
 		String[] args = {"a=1", "a=2"};
 		Map<String, String> map = AtomosRuntime.getConfiguration(args);
 		assertEquals(1, map.size());
-		assertEquals("2",map.get("a"));
+		assertEquals("2", map.get("a"));
 	}
-	
+
 	@Test
 	public void testRuntimeConfigNoValue() {
 		String[] args = {"a="};
 		Map<String, String> map = AtomosRuntime.getConfiguration(args);
 		assertEquals(1, map.size());
-		assertEquals("",map.get("a"));
+		assertEquals("", map.get("a"));
 	}
 	@Test
 	public void testRuntimeConfigEmpty() {

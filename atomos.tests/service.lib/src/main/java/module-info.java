@@ -8,7 +8,9 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-module service.lib {
-	requires static osgi.annotation;
-	exports org.atomos.service.lib;
+module service.lib
+{
+    requires static osgi.annotation;
+
+    exports org.atomos.service.lib;
 }

@@ -1,5 +1,6 @@
 package org.atomos.resource;
 
-public class Clazz {
+public class Clazz
+{
     // empty test resource
 }

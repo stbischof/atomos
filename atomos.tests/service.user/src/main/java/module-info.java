@@ -8,8 +8,9 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
-open module service.user {
-	requires service.contract;
-	requires atomos.framework;
-	requires static org.osgi.service.component.annotations;
+open module service.user
+{
+    requires service.contract;
+    requires atomos.framework;
+    requires static org.osgi.service.component.annotations;
 }
