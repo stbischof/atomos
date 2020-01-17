@@ -205,7 +205,7 @@ public class ModulepathLaunchTest
         ModulepathLaunch.main(new String[] {
                 Constants.FRAMEWORK_STORAGE + '=' + storage.toFile().getAbsolutePath(),
                 AtomosRuntime.ATOMOS_MODULES_DIR
-                + "=target/modules/resource.a-0.0.1-SNAPSHOT.jar" });
+                    + "=target/modules/resource.a-0.0.1-SNAPSHOT.jar" });
         testFramework = ModulepathLaunch.getFramework();
         final BundleContext bc = testFramework.getBundleContext();
         checkBundleStates(bc.getBundles());
@@ -487,7 +487,7 @@ public class ModulepathLaunchTest
 
     @Test
     void testLoaderType(@TempDir Path storage) throws BundleException,
-    InvalidSyntaxException, InterruptedException, ClassNotFoundException
+        InvalidSyntaxException, InterruptedException, ClassNotFoundException
     {
         ModulepathLaunch.main(new String[] {
                 Constants.FRAMEWORK_STORAGE + '=' + storage.toFile().getAbsolutePath() });
@@ -740,10 +740,9 @@ public class ModulepathLaunchTest
                 "org.atomos.resource.Clazz");
             final URL resc = clazz.getResource("file.txt");
             assertTrue(resc != null, "Expected URL, got null ");
-            assertTrue(
-                new BufferedReader(
-                    new InputStreamReader(resc.openStream())).readLine().equals(
-                        "/org/atomos/resource/file.txt"),
+            assertTrue(new BufferedReader(
+                new InputStreamReader(resc.openStream())).readLine().equals(
+                    "/org/atomos/resource/file.txt"),
                 "Incorrect contents from URL");
         }
         catch (final ClassNotFoundException e)

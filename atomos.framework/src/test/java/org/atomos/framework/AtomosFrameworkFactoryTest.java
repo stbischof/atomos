@@ -35,96 +35,104 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.connect.ConnectFrameworkFactory;
 import org.osgi.framework.launch.Framework;
 
-public class AtomosFrameworkFactoryTest {
+public class AtomosFrameworkFactoryTest
+{
 
-	private Framework testFramework;
+    private Framework testFramework;
 
-	@AfterEach
-	void afterTest() throws BundleException, InterruptedException, IOException {
-		if (testFramework != null
-				&& testFramework.getState() == Bundle.ACTIVE) {
-			testFramework.stop();
-			testFramework.waitForStop(10000);
-		}
+    @AfterEach
+    void afterTest() throws BundleException, InterruptedException, IOException
+    {
+        if (testFramework != null && testFramework.getState() == Bundle.ACTIVE)
+        {
+            testFramework.stop();
+            testFramework.waitForStop(10000);
+        }
 
-	}
+    }
 
-	@Test
-	void testFactory(@TempDir Path storage) throws BundleException {
-		ServiceLoader<ConnectFrameworkFactory> loader = ServiceLoader.load(
-				getClass().getModule().getLayer(),
-				ConnectFrameworkFactory.class);
-		assertNotNull(loader, "null loader.");
+    @Test
+    void testFactory(@TempDir Path storage) throws BundleException
+    {
+        ServiceLoader<ConnectFrameworkFactory> loader = ServiceLoader.load(
+            getClass().getModule().getLayer(), ConnectFrameworkFactory.class);
+        assertNotNull(loader, "null loader.");
 
-		List<ConnectFrameworkFactory> factories = new ArrayList<>();
-		loader.forEach((f) -> factories.add(f));
-		assertFalse(factories.isEmpty(), "No factory found.");
+        List<ConnectFrameworkFactory> factories = new ArrayList<>();
+        loader.forEach((f) -> factories.add(f));
+        assertFalse(factories.isEmpty(), "No factory found.");
 
-		ConnectFrameworkFactory factory = factories.get(0);
-		assertNotNull(factory, "null factory.");
+        ConnectFrameworkFactory factory = factories.get(0);
+        assertNotNull(factory, "null factory.");
 
-		Map<String, String> config = Map.of(Constants.FRAMEWORK_STORAGE,
-				storage.toFile().getAbsolutePath());
-		testFramework = factory.newFramework(config,
-				AtomosRuntime.newAtomosRuntime().newConnectFramework());
-		doTestFramework(testFramework);
-	}
+        Map<String, String> config = Map.of(Constants.FRAMEWORK_STORAGE,
+            storage.toFile().getAbsolutePath());
+        testFramework = factory.newFramework(config,
+            AtomosRuntime.newAtomosRuntime().newConnectFramework());
+        doTestFramework(testFramework);
+    }
 
-	@Test
-	void testRuntime(@TempDir Path storage) throws BundleException {
-		AtomosRuntime runtime = AtomosRuntime.newAtomosRuntime();
-		Map<String, String> config = Map.of(Constants.FRAMEWORK_STORAGE,
-				storage.toFile().getAbsolutePath());
-		testFramework = runtime.newFramework(config);
-		doTestFramework(testFramework);
-	}
+    @Test
+    void testRuntime(@TempDir Path storage) throws BundleException
+    {
+        AtomosRuntime runtime = AtomosRuntime.newAtomosRuntime();
+        Map<String, String> config = Map.of(Constants.FRAMEWORK_STORAGE,
+            storage.toFile().getAbsolutePath());
+        testFramework = runtime.newFramework(config);
+        doTestFramework(testFramework);
+    }
 
-	private void doTestFramework(Framework testFramework)
-			throws BundleException {
-		testFramework.start();
-		BundleContext bc = testFramework.getBundleContext();
-		assertNotNull(bc, "No context found.");
-		Bundle[] bundles = bc.getBundles();
+    private void doTestFramework(Framework testFramework) throws BundleException
+    {
+        testFramework.start();
+        BundleContext bc = testFramework.getBundleContext();
+        assertNotNull(bc, "No context found.");
+        Bundle[] bundles = bc.getBundles();
 
-		assertEquals(ModuleLayer.boot().modules().size(), bundles.length,
-				"Wrong number of bundles.");
+        assertEquals(ModuleLayer.boot().modules().size(), bundles.length,
+            "Wrong number of bundles.");
 
-		for (Bundle b : bundles) {
-			String msg = b.getLocation() + ": " + b.getSymbolicName() + ": "
-					+ getState(b);
-			System.out.println(msg);
-			int expected;
-			if ("osgi.annotation".equals(b.getSymbolicName())) {
-				expected = Bundle.INSTALLED;
-			} else {
-				expected = Bundle.ACTIVE;
-			}
-			assertEquals(expected, b.getState(),
-					"Wrong bundle state for bundle: " + msg);
-		}
-		Bundle javaLang = FrameworkUtil.getBundle(String.class);
-		assertNotNull(javaLang, "No bundle found.");
-		assertEquals(String.class.getModule().getName(),
-				javaLang.getSymbolicName(), "Wrong bundle name.");
-	}
+        for (Bundle b : bundles)
+        {
+            String msg = b.getLocation() + ": " + b.getSymbolicName() + ": "
+                + getState(b);
+            System.out.println(msg);
+            int expected;
+            if ("osgi.annotation".equals(b.getSymbolicName()))
+            {
+                expected = Bundle.INSTALLED;
+            }
+            else
+            {
+                expected = Bundle.ACTIVE;
+            }
+            assertEquals(expected, b.getState(), "Wrong bundle state for bundle: " + msg);
+        }
+        Bundle javaLang = FrameworkUtil.getBundle(String.class);
+        assertNotNull(javaLang, "No bundle found.");
+        assertEquals(String.class.getModule().getName(), javaLang.getSymbolicName(),
+            "Wrong bundle name.");
+    }
 
-	private String getState(Bundle b) {
-		switch (b.getState()) {
-			case Bundle.UNINSTALLED :
-				return "UNINSTALLED";
-			case Bundle.INSTALLED :
-				return "INSTALLED";
-			case Bundle.RESOLVED :
-				return "RESOLVED";
-			case Bundle.STARTING :
-				return "STARTING";
-			case Bundle.ACTIVE :
-				return "ACTIVE";
-			case Bundle.STOPPING :
-				return "STOPPING";
-			default :
-				return "unknown";
-		}
-	}
+    private String getState(Bundle b)
+    {
+        switch (b.getState())
+        {
+            case Bundle.UNINSTALLED:
+                return "UNINSTALLED";
+            case Bundle.INSTALLED:
+                return "INSTALLED";
+            case Bundle.RESOLVED:
+                return "RESOLVED";
+            case Bundle.STARTING:
+                return "STARTING";
+            case Bundle.ACTIVE:
+                return "ACTIVE";
+            case Bundle.STOPPING:
+                return "STOPPING";
+            default:
+                return "unknown";
+        }
+    }
 
 }
