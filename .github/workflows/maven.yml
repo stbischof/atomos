@@ -30,5 +30,5 @@ jobs:
     - name: install native image
       run: gu install native-image
     - name: cd
-      run: mvn clean package -f atomos.tests/service.substrate/pom.xml
+      run: mvn package -f atomos.tests/service.substrate/pom.xml
       
