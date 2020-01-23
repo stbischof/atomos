@@ -31,7 +31,9 @@ jobs:
     - name: install native image
       if: matrix.os == 'ubuntu-latest'
       run: gu install native-image
+    - name: avalible native image on not linux
+      if: matrix.os != 'ubuntu-latest'
+      run: gu available
     - name: substrate build with maven
       if: matrix.os == 'ubuntu-latest'
       run: mvn clean package -f atomos.tests/service.substrate/pom.xml
-      
