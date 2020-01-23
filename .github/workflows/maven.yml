@@ -23,12 +23,15 @@ jobs:
     - name: Build with Maven
       run: mvn clean install -B -Pjava8
     - name: Setup GraalVM environment
+      if: ${{ matrix.os }} == 'ubuntu-latest'
       uses: DeLaGuardo/setup-graalvm@2.0
       with:
         # The GraalVM version to make available on the path.
         graalvm-version: '19.3.0.java8'
     - name: install native image
+      if: ${{ matrix.os }} == 'ubuntu-latest'
       run: gu install native-image
-    - name: cd
+    - name: substrate build with maven
+      if: ${{ matrix.os }} == 'ubuntu-latest'
       run: mvn clean package -f atomos.tests/service.substrate/pom.xml
       
