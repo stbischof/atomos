@@ -26,7 +26,7 @@ jobs:
       uses: DeLaGuardo/setup-graalvm@2.0
       with:
         # The GraalVM version to make available on the path.
-        graalvm-version: 19.3.0
+        graalvm-version: '19.3.0.java8'
     - name: install native image
       run: gu install native-image
     - name: cd
