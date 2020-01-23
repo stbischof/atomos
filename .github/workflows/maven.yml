@@ -29,7 +29,7 @@ jobs:
         # The GraalVM version to make available on the path.
         graalvm-version: '19.3.0.java8'
     - name: install native image
-      if: ${{ matrix.os }} == 'ubuntu-latest'
+      if: matrix.os == 'ubuntu-latest'
       run: gu install native-image
     - name: substrate build with maven
       if: ${{ matrix.os }} == 'ubuntu-latest'
