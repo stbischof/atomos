@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.atomos.framework.AtomosRuntime;
+import org.atomos.service.contract.Echo;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.launch.Framework;
@@ -30,28 +31,40 @@ public class GogoConsole
 {
     public static void main(String[] args) throws BundleException, ClassNotFoundException
     {
-        long start = System.nanoTime();
+        int exitCode = 0;
+        try
+        {
 
-        AtomosRuntime atomosRuntime = AtomosRuntime.newAtomosRuntime();
-        Map<String, String> config = AtomosRuntime.getConfiguration(args);
-        config.putIfAbsent(LoggerContext.LOGGER_CONTEXT_DEFAULT_LOGLEVEL,
-            LogLevel.AUDIT.name());
-        Framework framework = atomosRuntime.newFramework(config);
-        framework.init();
-        BundleContext bc = framework.getBundleContext();
-        LogReaderService logReader = bc.getService(
-            bc.getServiceReference(LogReaderService.class));
-        logReader.addLogListener((e) -> {
-            System.out.println(getLogMessage(e));
-        });
-        framework.start();
+            long start = System.nanoTime();
 
-        long total = System.nanoTime() - start;
-        System.out.println("Total time: " + TimeUnit.NANOSECONDS.toMillis(total));
+            AtomosRuntime atomosRuntime = AtomosRuntime.newAtomosRuntime();
+            Map<String, String> config = AtomosRuntime.getConfiguration(args);
+            config.putIfAbsent(LoggerContext.LOGGER_CONTEXT_DEFAULT_LOGLEVEL,
+                LogLevel.AUDIT.name());
+            Framework framework = atomosRuntime.newFramework(config);
+            framework.init();
+            BundleContext bc = framework.getBundleContext();
+            LogReaderService logReader = bc.getService(
+                bc.getServiceReference(LogReaderService.class));
+            logReader.addLogListener((e) -> {
+                System.out.println(getLogMessage(e));
+            });
+            framework.start();
 
+            long total = System.nanoTime() - start;
+            System.out.println("Total time: " + TimeUnit.NANOSECONDS.toMillis(total));
+
+            Echo echo = bc.getService(bc.getServiceReference(Echo.class));
+            String result = echo.echo("Echo works!");
+            System.out.println(result);
+        }
+        catch (Exception e2)
+        {
+            exitCode = -1;
+        }
         if (Arrays.asList(args).contains("-exit"))
         {
-            System.exit(0);
+            System.exit(exitCode);
         }
     }
 
