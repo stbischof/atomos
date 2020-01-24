@@ -1,0 +1,6 @@
+FROM alpine:latest
+COPY target/atomos /opt/app
+RUN apk add --no-cache \
+        libc6-compat \
+	&& chmod +x /opt/app
+CMD ["/opt/app"]
