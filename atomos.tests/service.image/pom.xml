@@ -51,6 +51,44 @@
 			<version>${atomos.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.atomos</groupId>
+			<artifactId>service.jfxapp</artifactId>
+			<version>${atomos.version}</version>
+		</dependency>
+	<dependency>
+		<groupId>org.openjfx</groupId>
+		<artifactId>javafx-base</artifactId>
+		<version>13</version>
+		<classifier>linux</classifier>
+	</dependency>
+		<dependency>
+		<groupId>org.openjfx</groupId>
+		<artifactId>javafx-base</artifactId>
+		<version>13</version>
+	</dependency>
+	<dependency>
+		<groupId>org.openjfx</groupId>
+		<artifactId>javafx-controls</artifactId>
+		<version>13</version>
+		<classifier>linux</classifier>
+	</dependency>
+		<dependency>
+		<groupId>org.openjfx</groupId>
+		<artifactId>javafx-controls</artifactId>
+		<version>13</version>
+	</dependency>
+	<dependency>
+		<groupId>org.openjfx</groupId>
+		<artifactId>javafx-graphics</artifactId>
+		<version>13</version>
+		<classifier>linux</classifier>
+	</dependency>
+		<dependency>
+		<groupId>org.openjfx</groupId>
+		<artifactId>javafx-graphics</artifactId>
+		<version>13</version>
+	</dependency>
+		<dependency>
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.apache.felix.scr</artifactId>
 		</dependency>
@@ -309,6 +347,10 @@
 								<module>org.eclipse.osgi</module>
 								<module>osgi.promise</module>
 								<module>service.impl</module>
+								<module>service.jfxapp</module>
+								<module>javafx-base</module>
+								<module>javafx-controls</module>
+								<module>javafx-graphics</module>
 								<module>service.impl.activator</module>
 								<module>service.image</module>
 							</modules>
