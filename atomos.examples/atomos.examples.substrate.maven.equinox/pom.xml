@@ -20,7 +20,7 @@
             <url>https://github.com/tjwatson/atomos-temp-m2repo/raw/master/repository</url>
             <snapshots>
                 <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
+                <updatePolicy>interval:60</updatePolicy>
             </snapshots>
         </repository>
     </repositories>
@@ -141,12 +141,16 @@
                         <additionalInitializeAtBuildTime>org.apache.felix.service.command.Converter</additionalInitializeAtBuildTime>
                         <!-- <additionalInitializeAtBuildTime>org.apache.felix.atomos.impl.runtime.base</additionalInitializeAtBuildTime> -->
                     </additionalInitializeAtBuildTime>
-                    <graalResourceConfigFile>
+
+                    <graalResourceConfigFiles>
                         <graalResourceConfigFile>additionalResourceConfig.json</graalResourceConfigFile>
-                    </graalResourceConfigFile>
-                    <dynamicProxyConfigurationFile>
+                    </graalResourceConfigFiles>
+                    <dynamicProxyConfigurationFiles>
                         <dynamicProxyConfigurationFile>proxy_config.json</dynamicProxyConfigurationFile>
-                    </dynamicProxyConfigurationFile>
+                    </dynamicProxyConfigurationFiles>
+                    <reflectConfigFiles>
+                        <reflectConfigFile>reflectConfig_felixGogo.json</reflectConfigFile>
+                    </reflectConfigFiles>
                     <mainClass>org.apache.felix.atomos.tests.testbundles.substrate.main.GogoConsole</mainClass>
                 </configuration>
                 <executions>

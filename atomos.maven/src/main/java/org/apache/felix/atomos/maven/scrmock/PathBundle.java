@@ -23,14 +23,14 @@ import org.osgi.framework.Version;
 public class PathBundle implements Bundle
 {
 
-    private final JarFile jar;
+    //    private final JarFile jar;
 
     /**
      * @param jar
      */
     public PathBundle(JarFile jar)
     {
-        this.jar = jar;
+        //        this.jar = jar;
     }
 
     @Override

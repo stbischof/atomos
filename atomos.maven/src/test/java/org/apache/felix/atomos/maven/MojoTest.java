@@ -17,6 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,6 +42,21 @@ public class MojoTest
      *
      */
     private static final String ATOMOS_TESTS_TESTBUNDLES_RESOURCE_A = "org.apache.felix.atomos.tests.testbundles.resource.a-";
+
+    @Test
+    void testCL() throws Exception
+    {
+        final Path path = getTestDependencyFileTested(
+            "org.apache.felix.atomos.tests.testbundles.service.contract");
+
+        final URLClassLoader cl = new URLClassLoader(new URL[] { path.toUri().toURL() },
+            null);
+
+        final Class<?> cc = cl.loadClass(
+            "org.apache.felix.atomos.tests.testbundles.service.contract.Echo");
+        System.out.println(cc);
+
+    }
 
     @Test
     void testFull(@TempDir Path tempDir) throws Exception

@@ -64,10 +64,13 @@ public class AtomosMojo extends AbstractMojo
     private List<String> additionalInitializeAtBuildTime;
 
     @Parameter
-    private List<File> graalResourceConfigFile;
+    private List<File> graalResourceConfigFiles;
 
     @Parameter
-    private List<File> dynamicProxyConfigurationFile;
+    private List<File> dynamicProxyConfigurationFiles;
+
+    @Parameter
+    private List<File> reflectConfigFiles;
 
     public static boolean isJarFile(Path path)
     {
@@ -105,16 +108,22 @@ public class AtomosMojo extends AbstractMojo
                 config.imageName = imageName;
             }
 
-            if (graalResourceConfigFile != null && !graalResourceConfigFile.isEmpty())
+            if (graalResourceConfigFiles != null && !graalResourceConfigFiles.isEmpty())
             {
-                config.resourceConfigs = graalResourceConfigFile.stream().map(
+                config.resourceConfigs = graalResourceConfigFiles.stream().map(
                     File::toPath).collect(Collectors.toList());
             }
 
-            if (dynamicProxyConfigurationFile != null
-                && !dynamicProxyConfigurationFile.isEmpty())
+            if (reflectConfigFiles != null && !reflectConfigFiles.isEmpty())
             {
-                config.dynamicProxyConfigurationFiles = dynamicProxyConfigurationFile.stream().map(
+                config.reflectConfigFiles = reflectConfigFiles.stream().map(
+                    File::toPath).collect(Collectors.toList());
+            }
+
+            if (dynamicProxyConfigurationFiles != null
+                && !dynamicProxyConfigurationFiles.isEmpty())
+            {
+                config.dynamicProxyConfigurationFiles = dynamicProxyConfigurationFiles.stream().map(
                     File::toPath).collect(Collectors.toList());
             }
 

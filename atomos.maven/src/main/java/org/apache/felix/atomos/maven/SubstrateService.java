@@ -43,6 +43,10 @@ public class SubstrateService
     /**
      *
      */
+    private static final String ATOMOS_CATH_ALL = "atomos/.*$";
+    /**
+     *
+     */
     private static final String ATOMOS_SUBSTRATE_JAR = "atomos.substrate.jar";
     private static final Collection<String> DEFAULT_EXCLUDE_NAMES = Arrays.asList(
         "about.html", "DEPENDENCIES", "LICENSE", "NOTICE", "changelog.txt",
@@ -138,7 +142,8 @@ public class SubstrateService
     private static void writeGraalResourceConfig(JarOutputStream jos,
         List<String> resources) throws IOException
     {
-        resources.add(ATOMOS_BUNDLES_INDEX);
+        //        resources.add(ATOMOS_BUNDLES_INDEX);
+        resources.add(ATOMOS_CATH_ALL); // This alone could be enough,
 
         final ResourceConfigResult result = new ResourceConfigResult();
         result.allResourcePatterns.addAll(resources);

@@ -17,5 +17,6 @@ public class Config
     public boolean debug = false;
     public List<Path> resourceConfigs;
     public List<Path> dynamicProxyConfigurationFiles;
+    public List<Path> reflectConfigFiles;
 
 }

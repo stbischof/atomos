@@ -52,7 +52,14 @@ public class BuildArgs
             final Path reflectConfig = config.outputDir.resolve(
                 "graal_reflect_config.json");
             Files.write(reflectConfig, content.getBytes());
-            args.add("-H:ReflectionConfigurationFiles=" + reflectConfig.toString());
+        }
+        if (config.reflectConfigFiles != null && !config.reflectConfigFiles.isEmpty())
+        {
+            final String reflCfgFiles = config.reflectConfigFiles.stream().map(
+                p -> p.toAbsolutePath().toString()).collect(Collectors.joining(","));
+
+            args.add("-H:ReflectionConfigurationFiles=" + reflCfgFiles);
+
         }
         //H:ResourceConfigurationFiles
 
