@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.felix.atomos.launch.AtomosLauncher;
 import org.apache.felix.atomos.runtime.AtomosRuntime;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -30,23 +31,23 @@ public class Main
 {
     public static void main(String[] args) throws BundleException, ClassNotFoundException
     {
-        final long start = System.nanoTime();
+        long start = System.nanoTime();
 
-        final AtomosRuntime atomosRuntime = AtomosRuntime.newAtomosRuntime();
-        final Map<String, String> config = AtomosRuntime.getConfiguration(args);
+        AtomosRuntime atomosRuntime = AtomosRuntime.newAtomosRuntime();
+        Map<String, String> config = AtomosLauncher.getConfiguration(args);
         config.putIfAbsent(LoggerContext.LOGGER_CONTEXT_DEFAULT_LOGLEVEL,
             LogLevel.AUDIT.name());
-        final Framework framework = atomosRuntime.newFramework(config);
+        Framework framework = AtomosLauncher.newFramework(config, atomosRuntime);
         framework.init();
-        final BundleContext bc = framework.getBundleContext();
-        final LogReaderService logReader = bc.getService(
+        BundleContext bc = framework.getBundleContext();
+        LogReaderService logReader = bc.getService(
             bc.getServiceReference(LogReaderService.class));
         logReader.addLogListener((e) -> {
             System.out.println(getLogMessage(e));
         });
         framework.start();
 
-        final long total = System.nanoTime() - start;
+        long total = System.nanoTime() - start;
         System.out.println("Total time: " + TimeUnit.NANOSECONDS.toMillis(total));
 
         if (Arrays.asList(args).contains("-exit"))
