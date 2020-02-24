@@ -39,6 +39,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
 
+import org.apache.felix.atomos.maven.NativeImageMojo.Config;
 import org.apache.felix.atomos.maven.scrmock.EmptyBundeLogger;
 import org.apache.felix.atomos.maven.scrmock.PathBundle;
 import org.apache.felix.scr.impl.logger.BundleLogger;
@@ -49,7 +50,7 @@ import org.apache.felix.scr.impl.xml.XmlHandler;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.ComponentConstants;
 
-public class ReflectConfig
+public class ReflectConfigUtil
 {
     private static final String CLASS_START = "{\n";
     private static final String CLASS_END = "}";
@@ -64,14 +65,14 @@ public class ReflectConfig
     private static final String ACTIVATOR_CONSTRUCTOR = "\"methods\":[{\"name\":\"<init>\",\"parameterTypes\":[] }]";
     private static final String COMPONENT_CONSTRUCTOR = "\"allPublicConstructors\" : true";
 
-    static class ClassConfig
+    static class ReflectConfig
     {
         final String className;
         String constructor;
         Set<String> fields = new TreeSet<>();
         Set<String> methods = new TreeSet<>();
 
-        public ClassConfig(String className)
+        public ReflectConfig(String className)
         {
             this.className = className;
         }
@@ -79,11 +80,11 @@ public class ReflectConfig
         @Override
         public boolean equals(Object other)
         {
-            if (!(other instanceof ClassConfig))
+            if (!(other instanceof ReflectConfig))
             {
                 return false;
             }
-            return className == ((ClassConfig) other).className;
+            return className == ((ReflectConfig) other).className;
         }
 
         @Override
@@ -129,11 +130,11 @@ public class ReflectConfig
         }
     }
 
-    public static Map<String, ClassConfig> reflectConfig(List<Path> paths, Config config)
+    public static Map<String, ReflectConfig> reflectConfig(List<Path> paths, Config config)
         throws Exception
     {
 
-        final Map<String, ClassConfig> classes = new TreeMap<>();
+        final Map<String, ReflectConfig> classes = new TreeMap<>();
 
         for (final Path p : paths)
         {
@@ -151,26 +152,26 @@ public class ReflectConfig
      *
      */
 
-    public static String createConfigContent(Map<String, ClassConfig> reflectConfigs)
+    public static String createConfigContent(Map<String, ReflectConfig> reflectConfigs)
     {
         final StringBuilder builder = new StringBuilder();
         builder.append('[').append('\n');
         final AtomicReference<String> comma = new AtomicReference<>("");
 
-        final Collection<ClassConfig> configs = reflectConfigs.values();
+        final Collection<ReflectConfig> configs = reflectConfigs.values();
 
-        final List<ClassConfig> list = new ArrayList<>(configs);
+        final List<ReflectConfig> list = new ArrayList<>(configs);
 
-        Collections.sort(list, new Comparator<ClassConfig>()
+        Collections.sort(list, new Comparator<ReflectConfig>()
         {
             @Override
-            public int compare(ClassConfig o1, ClassConfig o2)
+            public int compare(ReflectConfig o1, ReflectConfig o2)
             {
                 return o1.className.compareTo(o2.className);
             }
         });
 
-        for (final ClassConfig config : configs)
+        for (final ReflectConfig config : configs)
         {
             builder.append(comma.getAndSet(COMMA)).append(config.toString());
         }
@@ -178,7 +179,7 @@ public class ReflectConfig
         return builder.toString();
     }
 
-    private static void discoverActivators(JarFile jar, Map<String, ClassConfig> classes)
+    private static void discoverActivators(JarFile jar, Map<String, ReflectConfig> classes)
         throws IOException
     {
 
@@ -191,8 +192,8 @@ public class ReflectConfig
         if (activator != null)
         {
             activator = activator.trim();
-            final ClassConfig config = classes.computeIfAbsent(activator,
-                (n) -> new ClassConfig(n));
+            final ReflectConfig config = classes.computeIfAbsent(activator,
+                (n) -> new ReflectConfig(n));
             if (config.constructor == null)
             {
                 config.constructor = ACTIVATOR_CONSTRUCTOR;
@@ -201,7 +202,7 @@ public class ReflectConfig
     }
 
     private static void discoverSeriviceComponents(List<Path> paths, JarFile jar,
-        Map<String, ClassConfig> classes) throws Exception
+        Map<String, ReflectConfig> classes) throws Exception
     {
         final URL[] urls = paths.stream().map(p -> {
             try
@@ -229,8 +230,8 @@ public class ReflectConfig
                 return;
             }
 
-            final ClassConfig config = classes.computeIfAbsent(clazz.getName(),
-                (n) -> new ClassConfig(n));
+            final ReflectConfig config = classes.computeIfAbsent(clazz.getName(),
+                (n) -> new ReflectConfig(n));
             config.constructor = COMPONENT_CONSTRUCTOR;
 
             Optional.ofNullable(c.getActivate()).ifPresent(
@@ -259,7 +260,7 @@ public class ReflectConfig
                     Optional.ofNullable(r.getUnbind()).ifPresent(
                         (m) -> addMethod(m, clazz, classes));
                     Optional.ofNullable(r.getInterface()).ifPresent(
-                        (i) -> classes.computeIfAbsent(i, (n) -> new ClassConfig(n)));
+                        (i) -> classes.computeIfAbsent(i, (n) -> new ReflectConfig(n)));
                 }
             }
         });
@@ -306,7 +307,7 @@ public class ReflectConfig
     }
 
     private static void addMethod(String mName, Class<?> clazz,
-        Map<String, ClassConfig> classes)
+        Map<String, ReflectConfig> classes)
     {
         System.out.println("-----------" + clazz.getName() + ":" + mName);
 
@@ -316,8 +317,8 @@ public class ReflectConfig
             {
                 if (mName.equals(m.getName()))
                 {
-                    final ClassConfig config = classes.computeIfAbsent(clazz.getName(),
-                        (n) -> new ClassConfig(n));
+                    final ReflectConfig config = classes.computeIfAbsent(clazz.getName(),
+                        (n) -> new ReflectConfig(n));
                     config.methods.add(mName);
                     return;
                 }
@@ -340,7 +341,7 @@ public class ReflectConfig
     }
 
     private static void addField(String fName, Class<?> clazz,
-        Map<String, ClassConfig> classes)
+        Map<String, ReflectConfig> classes)
     {
         System.out.println("???" + clazz.getName() + ":" + fName);
 
@@ -348,8 +349,8 @@ public class ReflectConfig
             f -> f.getName().equals(fName));
         if (exists)
         {
-            final ClassConfig config = classes.computeIfAbsent(clazz.getName(),
-                (n) -> new ClassConfig(n));
+            final ReflectConfig config = classes.computeIfAbsent(clazz.getName(),
+                (n) -> new ReflectConfig(n));
             config.fields.add(fName);
         }
 

@@ -149,14 +149,20 @@
                         <dynamicProxyConfigurationFile>proxy_config.json</dynamicProxyConfigurationFile>
                     </dynamicProxyConfigurationFiles>
                     <reflectConfigFiles>
-                        <reflectConfigFile>reflectConfig_felixGogo.json</reflectConfigFile>
+                        <reflectConfigFile>reflectConfig_felix_atomos.json</reflectConfigFile>
+                        <reflectConfigFile>reflectConfig_felix_gogo.json</reflectConfigFile>
+                        <reflectConfigFile>reflectConfig_felix_http.json</reflectConfigFile>
+                        <reflectConfigFile>reflectConfig_felix_scr.json</reflectConfigFile>
+                        <reflectConfigFile>reflectConfig_felix_web.json</reflectConfigFile>
+                        <reflectConfigFile>reflectConfig_jdk.json</reflectConfigFile>
+                        <reflectConfigFile>reflectConfig_jetty.json</reflectConfigFile>
                     </reflectConfigFiles>
-                    <mainClass>org.apache.felix.atomos.tests.testbundles.substrate.main.GogoConsole</mainClass>
+                    <mainClass>org.apache.felix.atomos.tests.testbundles.substrate.main.Main</mainClass>
                 </configuration>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>atomos</goal>
+                            <goal>atomos-native-image</goal>
                         </goals>
                         <phase>package</phase>
                     </execution>

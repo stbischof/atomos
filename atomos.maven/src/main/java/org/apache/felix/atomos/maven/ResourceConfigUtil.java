@@ -26,7 +26,9 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
-public class ResourceConfig
+import org.apache.felix.atomos.maven.NativeImageMojo.Config;
+
+public class ResourceConfigUtil
 {
     //TODO: remove Duplicats with substrateService
     private static final Collection<String> EXCLUDE_DIRS = Collections.unmodifiableList(
@@ -192,5 +194,12 @@ public class ResourceConfig
             indent.append("  ");
         }
         return indent.toString();
+    }
+
+    static class ResourceConfigResult
+    {
+        Set<String> allResourceBundles = new TreeSet<>();
+        Set<String> allResourcePatterns = new TreeSet<>();
+        Set<String> allResourcePackages = new TreeSet<>();
     }
 }

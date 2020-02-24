@@ -27,7 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.felix.atomos.maven.ReflectConfig.ClassConfig;
+import org.apache.felix.atomos.maven.NativeImageMojo.Config;
+import org.apache.felix.atomos.maven.ReflectConfigUtil.ReflectConfig;
+import org.apache.felix.atomos.maven.ResourceConfigUtil.ResourceConfigResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -67,13 +69,13 @@ public class MojoTest
         final Config config = new Config();
         config.outputDir = tempDir;
 
-        SubstrateService.substrate(paths, config);
-        final Map<String, ClassConfig> reflectConfigs = ReflectConfig.reflectConfig(paths,
+        SubstrateUtil.substrate(paths, config);
+        final Map<String, ReflectConfig> reflectConfigs = ReflectConfigUtil.reflectConfig(paths,
             config);
-        final ResourceConfigResult resourceConfigResult = ResourceConfig.resourceConfig(
+        final ResourceConfigResult resourceConfigResult = ResourceConfigUtil.resourceConfig(
             paths, config);
 
-        final List<String> args = BuildArgs.create(config, reflectConfigs,
+        final List<String> args = NativeImageBuilder.createArgs(config, reflectConfigs,
             resourceConfigResult);
 
         for (final String arg : args)
@@ -94,7 +96,7 @@ public class MojoTest
 
         final Config config = new Config();
         config.outputDir = tempDir;
-        final Path atomosSubstrateJar = SubstrateService.substrate(Arrays.asList(path),
+        final Path atomosSubstrateJar = SubstrateUtil.substrate(Arrays.asList(path),
             config);
         System.out.println(atomosSubstrateJar);
         System.out.println(atomosSubstrateJar);
@@ -107,7 +109,7 @@ public class MojoTest
         final List<Path> paths = getTestDependencyFiles();
         final Config config = new Config();
         config.outputDir = tempDir;
-        final Map<String, ClassConfig> map = ReflectConfig.reflectConfig(paths, config);
+        final Map<String, ReflectConfig> map = ReflectConfigUtil.reflectConfig(paths, config);
 
         assertThat(map).isNotNull().containsOnlyKeys(
             "org.apache.felix.atomos.tests.testbundles.service.contract.Echo",
@@ -127,7 +129,7 @@ public class MojoTest
         final List<Path> paths = getTestFiles("target/test-dependencies/");
         final Config config = new Config();
         config.outputDir = tempDir;
-        final Map<String, ClassConfig> map = ReflectConfig.reflectConfig(paths, config);
+        final Map<String, ReflectConfig> map = ReflectConfigUtil.reflectConfig(paths, config);
         assertThat(map).isNotNull();
 
         System.out.println(map);

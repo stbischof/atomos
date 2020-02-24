@@ -11,24 +11,37 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.apache.felix.atomos.maven.NativeImageMojo.Config;
+import org.apache.felix.atomos.maven.ReflectConfigUtil.ReflectConfig;
+import org.apache.felix.atomos.maven.ResourceConfigUtil.ResourceConfigResult;
+import org.apache.maven.plugin.MojoExecutionException;
 
 public class NativeImageBuilder
 {
 
     public static void execute(Config config, List<Path> classpath, List<String> args)
+        throws MojoExecutionException
     {
         try
         {
-            final Path exec = findNativeImageExecutable(config);
+            final Optional<Path> exec = findNativeImageExecutable(config);
+
+            if (exec.isEmpty())
+            {
+                throw new MojoExecutionException(
+                    "Missing native image executable. Set 'GRAAL_VM' with the path as an environment variable");
+            }
 
             final String cp = classpath.stream().map(
                 p -> p.toAbsolutePath().toString()).collect(Collectors.joining(":"));
 
             final List<String> commands = new ArrayList<>();
-            commands.add(exec.toAbsolutePath().toString());
+            commands.add(exec.get().toAbsolutePath().toString());
             commands.add("-cp");
             commands.add(cp);
             commands.addAll(args);
@@ -62,7 +75,7 @@ public class NativeImageBuilder
      * @param config
      * @return
      */
-    private static Path findNativeImageExecutable(Config config)
+    private static Optional<Path> findNativeImageExecutable(Config config)
     {
 
         Path exec = null;
@@ -83,7 +96,7 @@ public class NativeImageBuilder
         {
             exec = findNativeImageExec(Paths.get(System.getProperty("java.home")));
         }
-        return exec;
+        return Optional.ofNullable(exec);
     }
 
     /**
@@ -134,6 +147,84 @@ public class NativeImageBuilder
 
         }
         return candidate;
+
+    }
+
+    public static List<String> createArgs(Config config,
+        Map<String, ReflectConfig> reflectConfigs,
+        ResourceConfigResult resourceConfigResult) throws IOException
+    {
+        final List<String> args = new ArrayList<>();
+
+        args.add("--allow-incomplete-classpath");
+
+        //initialize-at-build-time
+
+        final List<String> in = new ArrayList<>();
+        if (resourceConfigResult.allResourcePackages != null)
+        {
+            in.addAll(resourceConfigResult.allResourcePackages);
+        }
+        if (config.additionalInitializeAtBuildTime != null)
+        {
+            in.addAll(config.additionalInitializeAtBuildTime);
+        }
+
+        final String initBuildTime = in.stream().sorted(
+            (o1, o2) -> o1.compareTo(o2)).collect(Collectors.joining(","));
+
+        if (initBuildTime != null && !initBuildTime.isEmpty())
+        {
+            args.add("--initialize-at-build-time=" + initBuildTime);
+        }
+
+        //H:ReflectionConfigurationFiles
+        final String content = ReflectConfigUtil.createConfigContent(reflectConfigs);
+
+        if (!content.isEmpty())
+        {
+            final Path reflectConfig = config.outputDir.resolve(
+                "graal_reflect_config.json");
+            Files.write(reflectConfig, content.getBytes());
+        }
+        if (config.reflectConfigFiles != null && !config.reflectConfigFiles.isEmpty())
+        {
+            final String reflCfgFiles = config.reflectConfigFiles.stream().map(
+                p -> p.toAbsolutePath().toString()).collect(Collectors.joining(","));
+
+            args.add("-H:ReflectionConfigurationFiles=" + reflCfgFiles);
+
+        }
+        //H:ResourceConfigurationFiles
+
+        if (config.resourceConfigs != null && !config.resourceConfigs.isEmpty())
+        {
+            final String files = config.resourceConfigs.stream().map(
+                p -> p.toAbsolutePath().toString()).collect(Collectors.joining(","));
+            args.add("-H:ResourceConfigurationFiles=" + files);
+        }
+
+        //H:DynamicProxyConfigurationFiles
+        if (config.dynamicProxyConfigurationFiles != null
+            && !config.dynamicProxyConfigurationFiles.isEmpty())
+        {
+            args.add("-H:DynamicProxyConfigurationFiles="
+                + config.dynamicProxyConfigurationFiles.stream().map(
+                    p -> p.toAbsolutePath().toString()).collect(Collectors.joining(",")));
+        }
+        //other
+        args.add("-H:+ReportUnsupportedElementsAtRuntime");
+        args.add("-H:+ReportExceptionStackTraces");
+        args.add("-H:+TraceClassInitialization");
+        args.add("-H:+PrintClassInitialization");
+        args.add("--no-fallback");
+        if (config.debug)
+        {
+            args.add("--debug-attach");
+        }
+        args.add("-H:Class=" + config.mainClass);
+        args.add("-H:Name=" + config.imageName);
+        return args;
 
     }
 }

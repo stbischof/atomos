@@ -50,7 +50,7 @@ public class SubstrateIndexConnectContent implements ConnectContent
             {
                 return resource.openConnection().getContentLengthLong();
             }
-            catch (IOException e)
+            catch (final IOException e)
             {
                 return -1;
             }
@@ -63,7 +63,7 @@ public class SubstrateIndexConnectContent implements ConnectContent
             {
                 return resource.openConnection().getDate();
             }
-            catch (IOException e)
+            catch (final IOException e)
             {
                 return 0;
             }
@@ -101,9 +101,16 @@ public class SubstrateIndexConnectContent implements ConnectContent
     @Override
     public Optional<ConnectEntry> getEntry(String name)
     {
+
+        System.out.println("?" + name);
+        for (final String string : entries)
+        {
+            System.out.println("!" + string);
+        }
+
         if (entries.contains(name))
         {
-            URL resource = getClass().getResource(
+            final URL resource = getClass().getResource(
                 AtomosRuntimeBase.ATOMOS_BUNDLES + index + '/' + name);
             if (resource != null)
             {

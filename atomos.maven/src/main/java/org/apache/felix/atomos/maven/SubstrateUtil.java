@@ -35,9 +35,11 @@ import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.felix.atomos.maven.NativeImageMojo.Config;
+import org.apache.felix.atomos.maven.ResourceConfigUtil.ResourceConfigResult;
 import org.osgi.framework.Constants;
 
-public class SubstrateService
+public class SubstrateUtil
 {
 
     /**
@@ -53,8 +55,9 @@ public class SubstrateService
         "LICENSE.txt");
     private static final Collection<String> DEFAULT_EXCLUDE_PATHS = Arrays.asList(
         "META-INF/maven/", "OSGI-OPT/");
-    public static final String ATOMOS_BUNDLES = "atomos/";
-    public static final String ATOMOS_BUNDLES_INDEX = ATOMOS_BUNDLES + "bundles.index";
+    public static final String ATOMOS_BUNDLES_BASE_PATH = "atomos/";
+    public static final String ATOMOS_BUNDLES_INDEX = ATOMOS_BUNDLES_BASE_PATH
+        + "bundles.index";
     private static final String ATOMOS_BUNDLE_SEPARATOR = "ATOMOS_BUNDLE";
 
     enum EntryType
@@ -127,7 +130,7 @@ public class SubstrateService
                     bundleIndexLines.add(s.version);
                     s.files.forEach(f -> {
                         bundleIndexLines.add(f);
-                        resources.add(s.id + "/" + f);
+                        resources.add(ATOMOS_BUNDLES_BASE_PATH + s.id + "/" + f);
                     });
                 }
             });
@@ -148,7 +151,7 @@ public class SubstrateService
         final ResourceConfigResult result = new ResourceConfigResult();
         result.allResourcePatterns.addAll(resources);
 
-        final String graalResConfJson = ResourceConfig.createResourceJson(result);
+        final String graalResConfJson = ResourceConfigUtil.createResourceJson(result);
 
         final JarEntry graalResConfEntry = new JarEntry(
             "META-INF/native-image/resource-config.json");
@@ -205,7 +208,7 @@ public class SubstrateService
                 try
                 {
                     final JarEntry entry = new JarEntry(
-                        ATOMOS_BUNDLES + id + "/" + j.getName());
+                        ATOMOS_BUNDLES_BASE_PATH + id + "/" + j.getName());
                     if (j.getCreationTime() != null)
                     {
                         entry.setCreationTime(j.getCreationTime());
@@ -230,5 +233,16 @@ public class SubstrateService
             throw new UncheckedIOException(e);
         }
         return info;
+    }
+
+    static class SubstrateInfo
+    {
+        Path out;
+        Path path;
+        String id;
+        String bsn;
+        String version;
+        List<String> files = new ArrayList<>();
+
     }
 }

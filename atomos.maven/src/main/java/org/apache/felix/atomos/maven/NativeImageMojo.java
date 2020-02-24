@@ -22,7 +22,8 @@ import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
-import org.apache.felix.atomos.maven.ReflectConfig.ClassConfig;
+import org.apache.felix.atomos.maven.ReflectConfigUtil.ReflectConfig;
+import org.apache.felix.atomos.maven.ResourceConfigUtil.ResourceConfigResult;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -30,8 +31,8 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
-@Mojo(name = "atomos", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
-public class AtomosMojo extends AbstractMojo
+@Mojo(name = "atomos-native-image", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
+public class NativeImageMojo extends AbstractMojo
 {
 
     private static final String ATOMOS_PATH = "ATOMOS";
@@ -130,17 +131,18 @@ public class AtomosMojo extends AbstractMojo
             config.nativeImageExec = nativeImageExecutable;
 
             final List<Path> paths = Files.list(classpath_lib.toPath()).filter(
-                AtomosMojo::isJarFile).collect(Collectors.toList());
+                NativeImageMojo::isJarFile).collect(Collectors.toList());
 
-            final Path p = SubstrateService.substrate(paths, config);
+            final Path p = SubstrateUtil.substrate(paths, config);
 
-            final Map<String, ClassConfig> reflectConfigs = ReflectConfig.reflectConfig(
+            final Map<String, ReflectConfig> reflectConfigs = ReflectConfigUtil.reflectConfig(
                 paths, config);
 
-            final ResourceConfigResult resourceConfigResult = ResourceConfig.resourceConfig(
+            final ResourceConfigResult resourceConfigResult = ResourceConfigUtil.resourceConfig(
                 paths, config);
 
-            final List<String> argsPath = BuildArgs.create(config, reflectConfigs,
+            final List<String> argsPath = NativeImageBuilder.createArgs(config,
+                reflectConfigs,
                 resourceConfigResult);
 
             paths.add(p);
@@ -150,10 +152,22 @@ public class AtomosMojo extends AbstractMojo
 
             final Exception e)
         {
-
             throw new MojoExecutionException("Error", e);
         }
 
     }
 
+
+    static class Config
+    {
+        public Path outputDir;
+        public String mainClass;
+        public String imageName;
+        public String nativeImageExec;
+        public List<String> additionalInitializeAtBuildTime;
+        public boolean debug = false;
+        public List<Path> resourceConfigs;
+        public List<Path> dynamicProxyConfigurationFiles;
+        public List<Path> reflectConfigFiles;
+    }
 }

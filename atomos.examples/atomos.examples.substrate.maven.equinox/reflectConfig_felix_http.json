@@ -1,0 +1,12 @@
+[
+   {
+    "name" : "org.apache.felix.http.whiteboard.internal.WhiteboardActivator",
+    "allPublicConstructors" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "org.apache.felix.http.jetty.internal.JettyActivator",
+    "allPublicConstructors" : true,
+    "allPublicMethods" : true
+  }
+]

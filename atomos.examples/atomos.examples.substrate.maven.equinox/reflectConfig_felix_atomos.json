@@ -1,0 +1,30 @@
+[
+   {
+    "name" : "org.apache.felix.atomos.impl.runtime.base.AtomosCommands",
+    "allPublicMethods" : true,
+    "allDeclaredMethods" : true,
+    "allPublicFields" : true,
+    "allDeclaredFields" : true
+   },
+   {
+    "name" : "org.apache.felix.atomos.tests.testbundles.service.impl.activator.Activator",
+    "allPublicConstructors" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "org.apache.felix.atomos.tests.testbundles.service.contract.Echo"
+  },
+  {
+    "name" : "org.apache.felix.atomos.tests.testbundles.service.impl.EchoImpl",
+    "allPublicConstructors" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "org.apache.felix.atomos.tests.testbundles.service.user.EchoUser",
+    "allPublicConstructors" : true,
+    "allPublicMethods" : true,
+    "allDeclaredMethods" : true,
+    "allPublicFields" : true,
+    "allDeclaredFields" : true
+  }
+]

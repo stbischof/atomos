@@ -26,7 +26,7 @@ import org.osgi.service.log.LogLevel;
 import org.osgi.service.log.LogReaderService;
 import org.osgi.service.log.admin.LoggerContext;
 
-public class GogoConsole
+public class Main
 {
     public static void main(String[] args) throws BundleException, ClassNotFoundException
     {

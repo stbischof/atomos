@@ -1,0 +1,19 @@
+[
+  {
+    "name" : "org.apache.felix.scr.impl.Activator",
+    "allPublicConstructors" : true,
+    "allPublicMethods" : true
+  }, 
+  {
+    "name" : "org.apache.felix.scr.impl.ComponentCommands",
+    "methods" : [
+      { "name" : "list", "parameterTypes" : [] },
+      { "name" : "list", "parameterTypes" : ["long"] },
+      { "name" : "info", "parameterTypes" : ["java.lang.String"] },
+      { "name" : "info", "parameterTypes" : ["long"] },
+      { "name" : "enable", "parameterTypes" : ["java.lang.String"] },
+      { "name" : "disable", "parameterTypes" : ["java.lang.String"] },
+      { "name" : "config", "parameterTypes" : [] }
+    ]
+  }
+]
