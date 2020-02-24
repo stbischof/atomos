@@ -17,8 +17,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 
@@ -59,7 +61,7 @@ public class NativeImageMojo extends AbstractMojo
     private String imageName;
 
     @Parameter
-    private String nativeImageExecutable;
+    private Path nativeImageExecutable;
 
     @Parameter
     private List<String> additionalInitializeAtBuildTime;
@@ -128,25 +130,43 @@ public class NativeImageMojo extends AbstractMojo
                     File::toPath).collect(Collectors.toList());
             }
 
-            config.nativeImageExec = nativeImageExecutable;
-
-            final List<Path> paths = Files.list(classpath_lib.toPath()).filter(
+            final List<Path> classPath = Files.list(classpath_lib.toPath()).filter(
                 NativeImageMojo::isJarFile).collect(Collectors.toList());
 
-            final Path p = SubstrateUtil.substrate(paths, config);
+            final Path substrateJar = SubstrateUtil.createSubstrateJar(classPath,
+                outputDirectory.toPath());
 
             final Map<String, ReflectConfig> reflectConfigs = ReflectConfigUtil.reflectConfig(
-                paths, config);
+                classPath, config);
 
             final ResourceConfigResult resourceConfigResult = ResourceConfigUtil.resourceConfig(
-                paths, config);
+                classPath, config);
 
-            final List<String> argsPath = NativeImageBuilder.createArgs(config,
-                reflectConfigs,
-                resourceConfigResult);
+            final String content = ReflectConfigUtil.createConfigContent(reflectConfigs);
+            if (!content.isEmpty())
+            {
+                final Path reflectConfig = config.outputDir.resolve(
+                    "graal_reflect_config" + System.nanoTime() + ".json");
+                Files.write(reflectConfig, content.getBytes());
+                config.reflectConfigFiles.add(reflectConfig);
+            }
 
-            paths.add(p);
-            NativeImageBuilder.execute(config, paths, argsPath);
+            final List<String> args = NativeImageBuilder.createArgs(config,
+                reflectConfigs, resourceConfigResult);
+
+            classPath.add(substrateJar);
+
+            final Optional<Path> exec = NativeImageBuilder.findNativeImageExecutable(
+                nativeImageExecutable);
+
+            if (exec.isEmpty())
+            {
+                throw new MojoExecutionException(
+                    "Missing native image executable. Set 'GRAAL_VM' with the path as an environment variable");
+            }
+
+            NativeImageBuilder.execute(exec.get(), outputDirectory.toPath(), classPath,
+                args);
         }
         catch (
 
@@ -157,17 +177,17 @@ public class NativeImageMojo extends AbstractMojo
 
     }
 
-
     static class Config
     {
-        public Path outputDir;
+
         public String mainClass;
         public String imageName;
-        public String nativeImageExec;
-        public List<String> additionalInitializeAtBuildTime;
+
+        public List<String> additionalInitializeAtBuildTime = new ArrayList<>();
         public boolean debug = false;
-        public List<Path> resourceConfigs;
-        public List<Path> dynamicProxyConfigurationFiles;
-        public List<Path> reflectConfigFiles;
+        public List<Path> resourceConfigs = new ArrayList<>();
+        public List<Path> dynamicProxyConfigurationFiles = new ArrayList<>();
+        public List<Path> reflectConfigFiles = new ArrayList<>();
+        public Path outputDir;
     }
 }

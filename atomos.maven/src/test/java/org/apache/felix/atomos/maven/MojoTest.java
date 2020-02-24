@@ -69,9 +69,9 @@ public class MojoTest
         final Config config = new Config();
         config.outputDir = tempDir;
 
-        SubstrateUtil.substrate(paths, config);
-        final Map<String, ReflectConfig> reflectConfigs = ReflectConfigUtil.reflectConfig(paths,
-            config);
+        SubstrateUtil.createSubstrateJar(paths, tempDir);
+        final Map<String, ReflectConfig> reflectConfigs = ReflectConfigUtil.reflectConfig(
+            paths, config);
         final ResourceConfigResult resourceConfigResult = ResourceConfigUtil.resourceConfig(
             paths, config);
 
@@ -94,10 +94,8 @@ public class MojoTest
         final Path path = getTestDependencyFileTested(
             ATOMOS_TESTS_TESTBUNDLES_RESOURCE_A);
 
-        final Config config = new Config();
-        config.outputDir = tempDir;
-        final Path atomosSubstrateJar = SubstrateUtil.substrate(Arrays.asList(path),
-            config);
+        final Path atomosSubstrateJar = SubstrateUtil.createSubstrateJar(
+            Arrays.asList(path), tempDir);
         System.out.println(atomosSubstrateJar);
         System.out.println(atomosSubstrateJar);
     }
@@ -109,7 +107,8 @@ public class MojoTest
         final List<Path> paths = getTestDependencyFiles();
         final Config config = new Config();
         config.outputDir = tempDir;
-        final Map<String, ReflectConfig> map = ReflectConfigUtil.reflectConfig(paths, config);
+        final Map<String, ReflectConfig> map = ReflectConfigUtil.reflectConfig(paths,
+            config);
 
         assertThat(map).isNotNull().containsOnlyKeys(
             "org.apache.felix.atomos.tests.testbundles.service.contract.Echo",
@@ -129,7 +128,8 @@ public class MojoTest
         final List<Path> paths = getTestFiles("target/test-dependencies/");
         final Config config = new Config();
         config.outputDir = tempDir;
-        final Map<String, ReflectConfig> map = ReflectConfigUtil.reflectConfig(paths, config);
+        final Map<String, ReflectConfig> map = ReflectConfigUtil.reflectConfig(paths,
+            config);
         assertThat(map).isNotNull();
 
         System.out.println(map);

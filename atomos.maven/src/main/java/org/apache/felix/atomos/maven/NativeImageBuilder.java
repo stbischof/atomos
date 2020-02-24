@@ -19,92 +19,102 @@ import java.util.stream.Stream;
 import org.apache.felix.atomos.maven.NativeImageMojo.Config;
 import org.apache.felix.atomos.maven.ReflectConfigUtil.ReflectConfig;
 import org.apache.felix.atomos.maven.ResourceConfigUtil.ResourceConfigResult;
-import org.apache.maven.plugin.MojoExecutionException;
 
 public class NativeImageBuilder
 {
+    private static final String GRAAL_HOME = "GRAAL_HOME";
+    private static final String JAVA_HOME = "java.home";
+    private static final String NI_PARAMETER_ALLOW_INCOMPLETE_CLASSPATH = "--allow-incomplete-classpath";
+    private static final String NI_PARAMETER_INITIALIZE_AT_BUILD_TIME = "--initialize-at-build-time=";
+    private static final String NI_PARAMETER_H_REFLECTION_CONFIGURATION_FILES = "-H:ReflectionConfigurationFiles=";
+    private static final String NI_PARAMETER_H_RESOURCE_CONFIGURATION_FILES = "-H:ResourceConfigurationFiles=";
+    private static final String NI_PARAMETER_H_DYNAMIC_PROXY_CONFIGURATION_FILES = "-H:DynamicProxyConfigurationFiles=";
+    private static final String NI_PARAMETER_NO_FALLBACK = "--no-fallback";
+    private static final String NI_PARAMETER_DEBUG_ATTACH = "--debug-attach";
+    private static final String NI_PARAMETER_H_REPORT_UNSUPPORTED_ELEMENTS_AT_RUNTIME = "-H:+ReportUnsupportedElementsAtRuntime";
+    private static final String NI_PARAMETER_H_REPORT_EXCEPTION_STACK_TRACES = "-H:+ReportExceptionStackTraces";
+    private static final String NI_PARAMETER_H_TRACE_CLASS_INITIALIZATION = "-H:+TraceClassInitialization";
+    private static final String NI_PARAMETER_H_PRINT_CLASS_INITIALIZATION = "-H:+PrintClassInitialization";
+    private static final String NI_PARAMETER_H_CLASS = "-H:Class=";
+    private static final String NI_DEFAULT_NAME = "application";
+    private static final String NI_PARAMETER_H_NAME = "-H:Name=";
 
-    public static void execute(Config config, List<Path> classpath, List<String> args)
-        throws MojoExecutionException
+    public static Path execute(Path nativeImageExecutable, Path outputDir,
+        List<Path> classpath, List<String> args) throws Exception
     {
-        try
+        final String cp = classpath.stream().map(
+            p -> p.toAbsolutePath().toString()).collect(Collectors.joining(":"));
+
+        final Optional<String> oName = args.stream().filter(
+            s -> s.startsWith(NI_PARAMETER_H_NAME)).findFirst();
+
+        Path resultExec = null;
+        if (oName.isPresent())
         {
-            final Optional<Path> exec = findNativeImageExecutable(config);
+            final String name = oName.get().substring(NI_PARAMETER_H_NAME.length());
+            resultExec = outputDir.resolve(name);
 
-            if (exec.isEmpty())
-            {
-                throw new MojoExecutionException(
-                    "Missing native image executable. Set 'GRAAL_VM' with the path as an environment variable");
-            }
+        }
+        else
+        {
+            args.add(NI_PARAMETER_H_NAME + NI_DEFAULT_NAME);
+            resultExec = outputDir.resolve(NI_DEFAULT_NAME);
+        }
 
-            final String cp = classpath.stream().map(
-                p -> p.toAbsolutePath().toString()).collect(Collectors.joining(":"));
+        final List<String> commands = new ArrayList<>();
+        commands.add(nativeImageExecutable.toAbsolutePath().toString());
+        commands.add("-cp");
+        commands.add(cp);
+        commands.addAll(args);
 
-            final List<String> commands = new ArrayList<>();
-            commands.add(exec.get().toAbsolutePath().toString());
-            commands.add("-cp");
-            commands.add(cp);
-            commands.addAll(args);
+        final ProcessBuilder pB = new ProcessBuilder(commands);
+        pB.inheritIO();
+        pB.directory(outputDir.toFile());
 
-            final ProcessBuilder pB = new ProcessBuilder(commands);
-            pB.inheritIO();
-            pB.directory(config.outputDir.toFile());
-
+        final boolean log = false;
+        if (log)
+        {
             final String cmds = pB.command().stream().collect(Collectors.joining(" "));
-
             System.out.println(cmds);
-
-            final Process process = pB.start();
-            final int exitValue = process.waitFor();
-            if (exitValue != 0)
-            {
-                System.out.println("Wrong exit Value: " + exitValue);
-            }
-            else
-            {
-                System.out.println("works!!");
-            }
         }
-        catch (IOException | InterruptedException e)
+        final Process process = pB.start();
+        final int exitValue = process.waitFor();
+        if (exitValue != 0)
         {
-            e.printStackTrace();
+            throw new Exception("native-image returns exit value: " + exitValue);
         }
+        if (Files.exists(resultExec))
+        {
+            return resultExec;
+        }
+        throw new Exception(
+            "native-image could not be found: " + resultExec.toAbsolutePath().toString());
     }
 
-    /**
-     * @param config
-     * @return
-     */
-    private static Optional<Path> findNativeImageExecutable(Config config)
+    public static Optional<Path> findNativeImageExecutable(Path nativeImageExec)
     {
-
         Path exec = null;
-        if (config.nativeImageExec != null)
+        if (nativeImageExec != null)
         {
-            exec = findNativeImageExec(Paths.get(config.nativeImageExec));
+            exec = findNativeImageExec(nativeImageExec);
         }
         if (exec == null)
         {
             exec = findNativeImageExec(Paths.get("native-image"));
         }
-        if (exec == null && System.getenv("GRAAL_HOME") != null)
+        if (exec == null && System.getenv(GRAAL_HOME) != null)
         {
-            exec = findNativeImageExec(Paths.get(System.getenv("GRAAL_HOME")));
+            exec = findNativeImageExec(Paths.get(System.getenv(GRAAL_HOME)));
         }
-
-        if (exec == null && System.getProperty("java.home") != null)
+        if (exec == null && System.getProperty(JAVA_HOME) != null)
         {
-            exec = findNativeImageExec(Paths.get(System.getProperty("java.home")));
+            exec = findNativeImageExec(Paths.get(System.getProperty(JAVA_HOME)));
         }
         return Optional.ofNullable(exec);
     }
 
-    /**
-     * @param path
-     */
     private static Path findNativeImageExec(Path path)
     {
-
         Path candidate = null;
         if (!Files.exists(path))
         {
@@ -113,27 +123,22 @@ public class NativeImageBuilder
         if (Files.isDirectory(path))
         {
             candidate = findNativeImageExec(path.resolve("native-image"));
-
             if (candidate == null)
             {
                 candidate = findNativeImageExec(path.resolve("bin"));
             }
-
         }
         else //file o
         {
-
             try
             {
                 final ProcessBuilder processBuilder = new ProcessBuilder(path.toString(),
                     "--version");
-
                 final Process versionProcess = processBuilder.start();
                 final Stream<String> lines = new BufferedReader(
                     new InputStreamReader(versionProcess.getInputStream())).lines();
                 final Optional<String> versionLine = lines.filter(
                     l -> l.contains("GraalVM Version")).findFirst();
-
                 if (!versionLine.isEmpty())
                 {
                     System.out.println(versionLine.get());
@@ -144,10 +149,8 @@ public class NativeImageBuilder
             {
                 e.printStackTrace();
             }
-
         }
         return candidate;
-
     }
 
     public static List<String> createArgs(Config config,
@@ -155,11 +158,8 @@ public class NativeImageBuilder
         ResourceConfigResult resourceConfigResult) throws IOException
     {
         final List<String> args = new ArrayList<>();
-
-        args.add("--allow-incomplete-classpath");
-
+        args.add(NI_PARAMETER_ALLOW_INCOMPLETE_CLASSPATH);
         //initialize-at-build-time
-
         final List<String> in = new ArrayList<>();
         if (resourceConfigResult.allResourcePackages != null)
         {
@@ -169,61 +169,46 @@ public class NativeImageBuilder
         {
             in.addAll(config.additionalInitializeAtBuildTime);
         }
-
         final String initBuildTime = in.stream().sorted(
             (o1, o2) -> o1.compareTo(o2)).collect(Collectors.joining(","));
-
         if (initBuildTime != null && !initBuildTime.isEmpty())
         {
-            args.add("--initialize-at-build-time=" + initBuildTime);
+            args.add(NI_PARAMETER_INITIALIZE_AT_BUILD_TIME + initBuildTime);
         }
-
         //H:ReflectionConfigurationFiles
-        final String content = ReflectConfigUtil.createConfigContent(reflectConfigs);
-
-        if (!content.isEmpty())
-        {
-            final Path reflectConfig = config.outputDir.resolve(
-                "graal_reflect_config.json");
-            Files.write(reflectConfig, content.getBytes());
-        }
         if (config.reflectConfigFiles != null && !config.reflectConfigFiles.isEmpty())
         {
             final String reflCfgFiles = config.reflectConfigFiles.stream().map(
                 p -> p.toAbsolutePath().toString()).collect(Collectors.joining(","));
-
-            args.add("-H:ReflectionConfigurationFiles=" + reflCfgFiles);
-
+            args.add(NI_PARAMETER_H_REFLECTION_CONFIGURATION_FILES + reflCfgFiles);
         }
         //H:ResourceConfigurationFiles
-
         if (config.resourceConfigs != null && !config.resourceConfigs.isEmpty())
         {
             final String files = config.resourceConfigs.stream().map(
                 p -> p.toAbsolutePath().toString()).collect(Collectors.joining(","));
-            args.add("-H:ResourceConfigurationFiles=" + files);
+            args.add(NI_PARAMETER_H_RESOURCE_CONFIGURATION_FILES + files);
         }
-
         //H:DynamicProxyConfigurationFiles
         if (config.dynamicProxyConfigurationFiles != null
             && !config.dynamicProxyConfigurationFiles.isEmpty())
         {
-            args.add("-H:DynamicProxyConfigurationFiles="
+            args.add(NI_PARAMETER_H_DYNAMIC_PROXY_CONFIGURATION_FILES
                 + config.dynamicProxyConfigurationFiles.stream().map(
                     p -> p.toAbsolutePath().toString()).collect(Collectors.joining(",")));
         }
         //other
-        args.add("-H:+ReportUnsupportedElementsAtRuntime");
-        args.add("-H:+ReportExceptionStackTraces");
-        args.add("-H:+TraceClassInitialization");
-        args.add("-H:+PrintClassInitialization");
-        args.add("--no-fallback");
+        args.add(NI_PARAMETER_H_REPORT_UNSUPPORTED_ELEMENTS_AT_RUNTIME);
+        args.add(NI_PARAMETER_H_REPORT_EXCEPTION_STACK_TRACES);
+        args.add(NI_PARAMETER_H_TRACE_CLASS_INITIALIZATION);
+        args.add(NI_PARAMETER_H_PRINT_CLASS_INITIALIZATION);
+        args.add(NI_PARAMETER_NO_FALLBACK);
         if (config.debug)
         {
-            args.add("--debug-attach");
+            args.add(NI_PARAMETER_DEBUG_ATTACH);
         }
-        args.add("-H:Class=" + config.mainClass);
-        args.add("-H:Name=" + config.imageName);
+        args.add(NI_PARAMETER_H_CLASS + config.mainClass);
+        args.add(NI_PARAMETER_H_NAME + config.imageName);
         return args;
 
     }

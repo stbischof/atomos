@@ -35,7 +35,6 @@ import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.felix.atomos.maven.NativeImageMojo.Config;
 import org.apache.felix.atomos.maven.ResourceConfigUtil.ResourceConfigResult;
 import org.osgi.framework.Constants;
 
@@ -70,7 +69,7 @@ public class SubstrateUtil
         return path.endsWith(".class");
     }
 
-    private static boolean filter(JarEntry entry, Config config)
+    private static boolean filter(JarEntry entry)
     {
         final String path = entry.getName();
         if (entry.isDirectory() || isClass(path))
@@ -94,20 +93,20 @@ public class SubstrateUtil
         return true;
     }
 
-    public static Path substrate(List<Path> files, Config config)
+    public static Path createSubstrateJar(List<Path> files, Path outputDir)
         throws IOException, NoSuchAlgorithmException
     {
-        if (!config.outputDir.toFile().isDirectory())
+        if (!outputDir.toFile().isDirectory())
         {
             throw new IllegalArgumentException(
-                "Output file must be a directory." + config.outputDir);
+                "Output file must be a directory." + outputDir);
         }
-        if (!config.outputDir.toFile().exists())
+        if (!outputDir.toFile().exists())
         {
-            Files.createDirectories(config.outputDir);
+            Files.createDirectories(outputDir);
         }
 
-        final Path p = config.outputDir.resolve(ATOMOS_SUBSTRATE_JAR);
+        final Path p = outputDir.resolve(ATOMOS_SUBSTRATE_JAR);
 
         final Manifest manifest = new Manifest();
         manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
@@ -119,7 +118,7 @@ public class SubstrateUtil
             final List<String> resources = new ArrayList<>();
             final AtomicLong counter = new AtomicLong(0);
             final Stream<SubstrateInfo> bis = files.stream()//
-                .map(path -> create(z, counter.getAndIncrement(), path, config))//
+                .map(path -> create(z, counter.getAndIncrement(), path))//
                 .peek(System.out::println);
             bis.forEach(s -> {
                 if (s.bsn != null)
@@ -185,7 +184,7 @@ public class SubstrateUtil
 
     }
 
-    static SubstrateInfo create(JarOutputStream jos, long id, Path path, Config config)
+    static SubstrateInfo create(JarOutputStream jos, long id, Path path)
     {
         final SubstrateInfo info = new SubstrateInfo();
         info.path = path;
@@ -204,7 +203,7 @@ public class SubstrateUtil
             {
                 info.version = "0.0";
             }
-            info.files = jar.stream().filter(j -> filter(j, config)).peek(j -> {
+            info.files = jar.stream().filter(j -> filter(j)).peek(j -> {
                 try
                 {
                     final JarEntry entry = new JarEntry(
