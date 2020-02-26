@@ -2,6 +2,9 @@
 	"resources": [
 		{
 			"pattern": "META-INF/services/.*$"
+		},
+		{
+			"pattern": "atomos/.*$"
 		}
 	]
 }

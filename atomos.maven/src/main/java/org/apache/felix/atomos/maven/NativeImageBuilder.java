@@ -71,7 +71,7 @@ public class NativeImageBuilder
         pB.inheritIO();
         pB.directory(outputDir.toFile());
 
-        final boolean log = false;
+        final boolean log = true;
         if (log)
         {
             final String cmds = pB.command().stream().collect(Collectors.joining(" "));

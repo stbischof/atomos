@@ -149,13 +149,14 @@
                         <dynamicProxyConfigurationFile>proxy_config.json</dynamicProxyConfigurationFile>
                     </dynamicProxyConfigurationFiles>
                     <reflectConfigFiles>
-                        <reflectConfigFile>reflectConfig_felix_atomos.json</reflectConfigFile>
-                        <reflectConfigFile>reflectConfig_felix_gogo.json</reflectConfigFile>
-                        <reflectConfigFile>reflectConfig_felix_http.json</reflectConfigFile>
-                        <reflectConfigFile>reflectConfig_felix_scr.json</reflectConfigFile>
-                        <reflectConfigFile>reflectConfig_felix_web.json</reflectConfigFile>
-                        <reflectConfigFile>reflectConfig_jdk.json</reflectConfigFile>
-                        <reflectConfigFile>reflectConfig_jetty.json</reflectConfigFile>
+                        <reflectConfigFile>rc.json</reflectConfigFile>
+                        <!-- <reflectConfigFile>reflectConfig_felix_atomos.json</reflectConfigFile> -->
+                        <!-- <reflectConfigFile>reflectConfig_felix_gogo.json</reflectConfigFile> -->
+                        <!-- <reflectConfigFile>reflectConfig_felix_http.json</reflectConfigFile> -->
+                        <!-- <reflectConfigFile>reflectConfig_felix_scr.json</reflectConfigFile> -->
+                        <!-- <reflectConfigFile>reflectConfig_felix_web.json</reflectConfigFile> -->
+                        <!-- <reflectConfigFile>reflectConfig_jdk.json</reflectConfigFile> -->
+                        <!-- <reflectConfigFile>reflectConfig_jetty.json</reflectConfigFile> -->
                     </reflectConfigFiles>
                     <mainClass>org.apache.felix.atomos.tests.testbundles.substrate.main.Main</mainClass>
                 </configuration>

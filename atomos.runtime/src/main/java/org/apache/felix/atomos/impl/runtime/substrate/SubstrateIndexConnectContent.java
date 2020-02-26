@@ -15,6 +15,8 @@ package org.apache.felix.atomos.impl.runtime.substrate;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -101,17 +103,11 @@ public class SubstrateIndexConnectContent implements ConnectContent
     @Override
     public Optional<ConnectEntry> getEntry(String name)
     {
-
-        System.out.println("?" + name);
-        for (final String string : entries)
-        {
-            System.out.println("!" + string);
-        }
-
         if (entries.contains(name))
         {
             final URL resource = getClass().getResource(
                 AtomosRuntimeBase.ATOMOS_BUNDLES + index + '/' + name);
+            System.out.println("!" + resource);
             if (resource != null)
             {
                 return Optional.of(new URLConnectEntry(name, resource));
@@ -123,7 +119,7 @@ public class SubstrateIndexConnectContent implements ConnectContent
     @Override
     public Optional<ClassLoader> getClassLoader()
     {
-        return Optional.of(getClass().getClassLoader());
+        return Optional.of(new ProxyClassLoader(getClass().getClassLoader()));
     }
 
     @Override

@@ -145,8 +145,9 @@ public class NativeImageMojo extends AbstractMojo
             final String content = ReflectConfigUtil.createConfigContent(reflectConfigs);
             if (!content.isEmpty())
             {
+                config.reflectConfigFiles.remove(0);
                 final Path reflectConfig = config.outputDir.resolve(
-                    "graal_reflect_config" + System.nanoTime() + ".json");
+                    "reflect_config_" + System.nanoTime() + ".json");
                 Files.write(reflectConfig, content.getBytes());
                 config.reflectConfigFiles.add(reflectConfig);
             }
